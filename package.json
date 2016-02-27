@@ -1,0 +1,39 @@
+{
+  "name": "table-select",
+  "version": "0.0.0",
+  "description": "Easily select rows in html tables",
+  "keywords": [
+    "js",
+    "html",
+    "table",
+    "select"
+  ],
+  "author": {
+    "name": "Matthias Fey",
+    "email": "matthias.fey@tu-dortmund.de",
+    "url": "http://rusty1s.github.io"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/rusty1s/table-select.git"
+  },
+  "license": "MIT",
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "http://www.opensource.org/licenses/MIT"
+    }
+  ],
+  "readmeFilename": "README.md",
+  "bugs": {
+    "url": "http://github.com/rusty1s/table-select/issues"
+  },
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha test"
+  },
+  "devDependencies": {
+  },
+  "dependencies": {
+  }
+}
