@@ -28,12 +28,20 @@
   "bugs": {
     "url": "http://github.com/rusty1s/table-select/issues"
   },
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
-    "test": "mocha test"
+    "lint": "eslint src",
+    "compile": "babel src/index.js -o dist/table-select.js",
+    "uglify": "uglifyjs dist/table-select.js -o dist/table-select.min.js",
+    "build": "npm run lint & (npm run compile && npm run uglify)",
+    "test": ""
   },
   "devDependencies": {
+    "babel-cli": "*",
+    "babel-preset-es2015": "*",
+    "eslint": "*",
+    "eslint-config-airbnb": "*",
+    "uglify-js": "*"
   },
-  "dependencies": {
-  }
+  "dependencies": {}
 }
