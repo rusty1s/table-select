@@ -1,7 +1,7 @@
 {
   "name": "table-select",
   "version": "0.0.0",
-  "description": "Easily select rows in html tables",
+  "description": "Selecting row component in html tables",
   "keywords": [
     "js",
     "html",
@@ -28,20 +28,21 @@
   "bugs": {
     "url": "http://github.com/rusty1s/table-select/issues"
   },
-  "main": "dist/index.js",
+  "main": "dist/table-select.js",
   "scripts": {
     "lint": "eslint src",
     "compile": "babel src/index.js -o dist/table-select.js",
     "uglify": "uglifyjs dist/table-select.js -o dist/table-select.min.js",
-    "build": "npm run lint & (npm run compile && npm run uglify)",
-    "test": ""
+    "build": "npm run compile && npm run uglify",
+    "test": "tape -r babel-register test | tap-spec"
   },
   "devDependencies": {
     "babel-cli": "*",
     "babel-preset-es2015": "*",
     "eslint": "*",
     "eslint-config-airbnb": "*",
+    "tap-spec": "*",
+    "tape": "*",
     "uglify-js": "*"
-  },
-  "dependencies": {}
+  }
 }

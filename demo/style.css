@@ -1,0 +1,7 @@
+table.selectable tbody tr {
+    cursor: pointer;
+}
+
+table.selectable tbody tr.selected {
+    background-color: lightgray;
+}
