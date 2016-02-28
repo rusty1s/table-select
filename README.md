@@ -35,7 +35,7 @@ const tableSelect = new TableSelect(element, options);
 
 ## Contributing
 
-If you would like to submit a pull request with any changes you make, please feel free!
+If you would like to [submit a pull request](https://github.com/rusty1s/table-select/pulls) with any changes you make, please feel free!
 Simply run `npm run lint` and `npm run compile` before submitting pull requests.
 
 Tests are run via:
