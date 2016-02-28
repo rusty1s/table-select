@@ -33,12 +33,6 @@ import 'table-select';
 const tableSelect = new TableSelect(element, options);
 ```
 
-## Tests
-
-```
-npm test
-``
-
 ## Contributing
 
 If you would like to submit a pull request with any changes you make, please feel free!
