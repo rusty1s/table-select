@@ -41,7 +41,7 @@ Simply run `npm run lint` and `npm run compile` before submitting pull requests.
 Tests are run via:
 
 ```
-npm install && npm tests
+npm install && npm test
 ```
 
 ## Issues
