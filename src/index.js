@@ -8,12 +8,18 @@ import { onKeyPress } from './events/keypress';
 import { onFocusOut } from './events/focus';
 import { onClickRow } from './events/click';
 
+/*
+ shift und strg, arrow and normal click
+ action
+ lodash nur arrow remove und last
+ */
+
 const defaultOptions = {
   className: 'selectable',
   selectedClassName: 'selected',
 };
 
-class TableSelect {
+export default class TableSelect {
   constructor(element, options = {}) {
     if (!element || element.tagName !== 'TABLE') {
       throw new Error('Element must be a table');
@@ -85,7 +91,7 @@ class TableSelect {
     return this.selectedRows().map(row => this.indexOfRow(row));
   }
 
-  nextSibling(row) {
+  nextRow(row) {
     let nextRow = row.nextSibling;
     while (nextRow !== null && nextRow.nodeType === 3) {
       nextRow = nextRow.nextSibling;
@@ -93,7 +99,7 @@ class TableSelect {
     return nextRow;
   }
 
-  previousSibling(row) {
+  previousRow(row) {
     let previousRow = row.previousSibling;
     while (previousRow !== null && previousRow.nodeType === 3) {
       previousRow = previousRow.previousSibling;
@@ -151,35 +157,27 @@ class TableSelect {
   selectRange(row, expand = false) {
     // console.log(this._lastSelectedRows);
 
-    /*const rowIndex = this.indexOfRow(row);
+    const rowIndex = this.indexOfRow(row);
     const otherRow = last(this._lastSelectedRows);
     const otherRowIndex = otherRow ? this.indexOfRow(otherRow) : 0;
 
     const firstRow = rowIndex < otherRowIndex ? row : otherRow;
-    const diff = Math.abs(rowIndex - otherRowIndex);*/
+    const diff = Math.abs(rowIndex - otherRowIndex);
 
-    /*let currentRow = this.nextSibling(firstRow);
-    for (var i = 0; i <= diff; i++) {
-      console.log(currentRow);
-      this.selectRow(currentRow, true);
-      currentRow = this.nextSibling(currentRow);
-    }*/
-    this.rows().forEach(row => {
-      this.selectRow(row, true, false);
+    let currentRow = this.nextRow(firstRow);
+    for (var i = 0; i < diff; i++) {
+      //console.log(currentRow);
+      this.selectRow(currentRow, true, false);
+      currentRow = this.nextRow(currentRow);
+    }
+    this.rows().forEach(r => {
+      //this.selectRow(r, true, false);
     });
   }
 }
-
-export default TableSelect;
 
 export function setDefaultOptions(options) {
   Object.assign(defaultOptions, options);
 }
 
 if (window) window.TableSelect = TableSelect;
-
-/*
-shift und strg, arrow and normal click
-action
-lodash nur arrow remove und last
- */

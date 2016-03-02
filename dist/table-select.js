@@ -51,6 +51,27 @@ function CustomEvent (type, params) {
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{}],2:[function(require,module,exports){
+/**
+ * Gets the last element of `array`.
+ *
+ * @static
+ * @memberOf _
+ * @category Array
+ * @param {Array} array The array to query.
+ * @returns {*} Returns the last element of `array`.
+ * @example
+ *
+ * _.last([1, 2, 3]);
+ * // => 3
+ */
+function last(array) {
+  var length = array ? array.length : 0;
+  return length ? array[length - 1] : undefined;
+}
+
+module.exports = last;
+
+},{}],3:[function(require,module,exports){
 /*
  function clearSelection() {
  const selection = window.getSelection ?
@@ -89,7 +110,7 @@ function onClickRow(row) {
   };
 }
 
-},{}],3:[function(require,module,exports){
+},{}],4:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -100,7 +121,7 @@ function onFocusOut() {
   this.deselectAll();
 }
 
-},{}],4:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -129,7 +150,7 @@ function onKeyPress(event) {
   }
 }
 
-},{}],5:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -165,12 +186,16 @@ function onBeforeDeselect(event) {
   });
 }
 
-},{}],6:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+
+var _last = require('lodash/last');
+
+var _last2 = _interopRequireDefault(_last);
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
@@ -191,6 +216,12 @@ var _click = require('./events/click');
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+/*
+ shift und strg, arrow and normal click
+ action
+ lodash nur arrow remove und last
+ */
 
 var defaultOptions = {
   className: 'selectable',
@@ -383,26 +414,25 @@ var TableSelect = function () {
   }, {
     key: 'selectRange',
     value: function selectRange(row) {
-      var _this9 = this;
-
       var expand = arguments.length <= 1 || arguments[1] === undefined ? false : arguments[1];
 
       // console.log(this._lastSelectedRows);
 
-      /*const rowIndex = this.indexOfRow(row);
-      const otherRow = last(this._lastSelectedRows);
-      const otherRowIndex = otherRow ? this.indexOfRow(otherRow) : 0;
-       const firstRow = rowIndex < otherRowIndex ? row : otherRow;
-      const diff = Math.abs(rowIndex - otherRowIndex);*/
+      var rowIndex = this.indexOfRow(row);
+      var otherRow = (0, _last2.default)(this._lastSelectedRows);
+      var otherRowIndex = otherRow ? this.indexOfRow(otherRow) : 0;
 
-      /*let currentRow = this.nextSibling(firstRow);
-      for (var i = 0; i <= diff; i++) {
-        console.log(currentRow);
-        this.selectRow(currentRow, true);
+      var firstRow = rowIndex < otherRowIndex ? row : otherRow;
+      var diff = Math.abs(rowIndex - otherRowIndex);
+
+      var currentRow = this.nextSibling(firstRow);
+      for (var i = 0; i < diff; i++) {
+        //console.log(currentRow);
+        this.selectRow(currentRow, true, false);
         currentRow = this.nextSibling(currentRow);
-      }*/
-      this.rows().forEach(function (row) {
-        _this9.selectRow(row, true, false);
+      }
+      this.rows().forEach(function (r) {
+        //this.selectRow(r, true, false);
       });
     }
   }]);
@@ -417,10 +447,4 @@ function setDefaultOptions(options) {
 
 if (window) window.TableSelect = TableSelect;
 
-/*
-shift und strg, arrow and normal click
-action
-lodash nur arrow remove und last
- */
-
-},{"./events/click":2,"./events/focus":3,"./events/keypress":4,"./events/select":5,"custom-event":1}]},{},[6]);
+},{"./events/click":3,"./events/focus":4,"./events/keypress":5,"./events/select":6,"custom-event":1,"lodash/last":2}]},{},[7]);
