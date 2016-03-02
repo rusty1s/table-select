@@ -51,13 +51,142 @@ function CustomEvent (type, params) {
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{}],2:[function(require,module,exports){
+/*
+ function clearSelection() {
+ const selection = window.getSelection ?
+ window.getSelection() :
+ document.selection;
+ if (selection) {
+ if (selection.removeAllRanges) sel.removeAllRanges();
+ else if (selection.empty) sel.empty();
+ }
+ }*/
+
 'use strict';
 
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.onClickRow = onClickRow;
+function onClickRow(row) {
+  return function onClick(event) {
+    if (event.shiftKey) {
+      this.selectRange(row, true);
+    } else if (event.ctrlKey || event.metaKey) {
+      if (!this.isRowSelected(row)) {
+        this.selectRow(row, false, true);
+        this._lastSelectedRows.push(row);
+      } else {
+        this.deselectRow(row);
+        remove(this._lastSelectedRows, function (r) {
+          return r === row;
+        });
+      }
+    } else {
+      this.selectRow(row, false, true);
+      this._lastSelectedRows = [row];
+    }
+  };
+}
+
+},{}],3:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.onFocusOut = onFocusOut;
+function onFocusOut() {
+  this.deselectAll();
+}
+
+},{}],4:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.onKeyPress = onKeyPress;
+function onKeyPress(event) {
+  // up arrow
+  if (event.keyCode === 38) {
+    var previousRow = this.selectedRows().shift().previousSibling;
+    while (previousRow !== null && previousRow.nodeType === 3) {
+      previousRow = previousRow.previousSibling;
+    }
+
+    if (previousRow) this.selectRow(previousRow, false, true);
+  }
+
+  // down arrow
+  if (event.keyCode === 40) {
+    var nextRow = this.selectedRows().pop().nextSibling;
+    while (nextRow !== null && nextRow.nodeType === 3) {
+      nextRow = nextRow.nextSibling;
+    }
+
+    if (nextRow) this.selectRow(nextRow, false, true);
+  }
+}
+
+},{}],5:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.onBeforeSelect = onBeforeSelect;
+exports.onBeforeDeselect = onBeforeDeselect;
+function onBeforeSelect(event) {
+  var _this = this;
+
+  setTimeout(function () {
+    if (!event.defaultPrevented) {
+      event.detail.row.classList.add(_this.selectedClassName);
+
+      _this.element.dispatchEvent(new CustomEvent('afterSelect', {
+        detail: event.detail
+      }));
+    }
+  });
+}
+
+function onBeforeDeselect(event) {
+  var _this2 = this;
+
+  setTimeout(function () {
+    if (!event.defaultPrevented) {
+      event.detail.row.classList.remove(_this2.selectedClassName);
+
+      _this2.element.dispatchEvent(new CustomEvent('afterDeselect', {
+        detail: event.detail
+      }));
+    }
+  });
+}
+
+},{}],6:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+exports.setDefaultOptions = setDefaultOptions;
 
 var _customEvent = require('custom-event');
 
 var _customEvent2 = _interopRequireDefault(_customEvent);
+
+var _select = require('./events/select');
+
+var _keypress = require('./events/keypress');
+
+var _focus = require('./events/focus');
+
+var _click = require('./events/click');
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -67,22 +196,6 @@ var defaultOptions = {
   className: 'selectable',
   selectedClassName: 'selected'
 };
-
-/*
-function clearSelection() {
-  const selection = window.getSelection ?
-    window.getSelection() :
-    document.selection;
-  if (selection) {
-    if (selection.removeAllRanges) sel.removeAllRanges();
-    else if (selection.empty) sel.empty();
-  }
-}*/
-
-/*
-export function setDefaultOptions(options) {
-  Object.assign(defaultOptions, options);
-}*/
 
 var TableSelect = function () {
   function TableSelect(element) {
@@ -100,84 +213,56 @@ var TableSelect = function () {
 
     Object.assign(this, defaultOptions, options, { element: element });
 
-    this.init();
+    this._init();
   }
 
   _createClass(TableSelect, [{
-    key: 'init',
-    value: function init() {
+    key: '_init',
+    value: function _init() {
       var _this = this;
 
       this.element.classList.add(this.className);
+      this._lastSelectedRows = [];
+
+      this._onBeforeSelect = _select.onBeforeSelect.bind(this);
+      this._onBeforeDeselect = _select.onBeforeDeselect.bind(this);
+      this._onKeyPress = _keypress.onKeyPress.bind(this);
+      this._onFocusOut = _focus.onFocusOut.bind(this);
+
+      this.element.addEventListener('beforeSelect', this._onBeforeSelect);
+      this.element.addEventListener('beforeDeselect', this._onBeforeDeselect);
+      this.element.addEventListener('keydown', this._onKeyPress);
+      this.element.addEventListener('focusout', this._onFocusOut);
+
       this.rows().forEach(function (row) {
-        return _this._initRow(row);
-      });
-
-      this.element.addEventListener('beforeSelect', function (event) {
-        setTimeout(function () {
-          if (!event.defaultPrevented) {
-            event.detail.row.classList.add(_this.selectedClassName);
-
-            _this.element.dispatchEvent(new _customEvent2.default('afterSelect', {
-              detail: event.detail
-            }));
-          }
-        });
-      });
-
-      this.element.addEventListener('beforeDeselect', function (event) {
-        setTimeout(function () {
-          if (!event.defaultPrevented) {
-            event.detail.row.classList.remove(_this.selectedClassName);
-
-            _this.element.dispatchEvent(new _customEvent2.default('afterDeselect', {
-              detail: event.detail
-            }));
-          }
-        });
-      });
-    }
-  }, {
-    key: '_initRow',
-    value: function _initRow(row) {
-      var _this2 = this;
-
-      row.addEventListener('click', function (event) {
-        if (event.shiftKey) {} else if (event.ctrlKey || event.metaKey) {
-          _this2.toggleRow(row);
-        } else {
-          _this2.selectRowExclusive(row);
-        }
+        row.addEventListener('click', (0, _click.onClickRow)(row).bind(_this));
       });
     }
   }, {
     key: 'destroy',
     value: function destroy() {
-      var _this3 = this;
+      var _this2 = this;
 
       this.element.classList.remove(this.className);
+
+      this.element.removeEventListener('beforeSelect', this._onBeforeSelect);
+      this.element.removeEventListener('beforeDeselect', this._onBeforeDeselect);
+      this.element.removeEventListener('keydown', this._onKeyPress);
+      this.element.removeEventListener('focusout', this._onFocusOut);
+
       this.rows().forEach(function (row) {
-        return _this3._destroyRow(row);
+        _this2.deselectRow(row);
+        row.removeEventListener('click');
       });
 
-      this.element.removeEventListener('beforeSelect');
-      this.element.removeEventListener('beforeDeselect');
-    }
-  }, {
-    key: '_destroyRow',
-    value: function _destroyRow(row) {
-      this.deselectRow(row);
-      row.removeEventListener('click');
+      Object.keys(this).forEach(function (name) {
+        _this2[name] = null;
+      });
     }
   }, {
     key: 'rows',
     value: function rows() {
       return Array.from(this.element.querySelector('tbody').children);
-    }
-  }, {
-    key: 'length',
-    value: function length() {
-      return this.rows().length;
     }
   }, {
     key: 'indexOfRow',
@@ -192,29 +277,73 @@ var TableSelect = function () {
   }, {
     key: 'selectedRows',
     value: function selectedRows() {
-      var _this4 = this;
+      var _this3 = this;
 
       return this.rows().filter(function (row) {
-        return _this4.isRowSelected(row);
+        return _this3.isRowSelected(row);
       });
     }
   }, {
     key: 'selectedRowIndices',
     value: function selectedRowIndices() {
-      var _this5 = this;
+      var _this4 = this;
 
       return this.selectedRows().map(function (row) {
-        return _this5.indexOfRow(row);
+        return _this4.indexOfRow(row);
       });
+    }
+  }, {
+    key: 'nextSibling',
+    value: function nextSibling(row) {
+      var nextRow = row.nextSibling;
+      while (nextRow !== null && nextRow.nodeType === 3) {
+        nextRow = nextRow.nextSibling;
+      }
+      return nextRow;
+    }
+  }, {
+    key: 'previousSibling',
+    value: function previousSibling(row) {
+      var previousRow = row.previousSibling;
+      while (previousRow !== null && previousRow.nodeType === 3) {
+        previousRow = previousRow.previousSibling;
+      }
+      return previousRow;
     }
   }, {
     key: 'selectRow',
     value: function selectRow(row) {
+      var _this6 = this;
+
+      var expand = arguments.length <= 1 || arguments[1] === undefined ? false : arguments[1];
+      var explicitSelected = arguments.length <= 2 || arguments[2] === undefined ? false : arguments[2];
+
+      function deselectAllOthers() {
+        var _this5 = this;
+
+        this.selectedRows().filter(function (r) {
+          return r !== row;
+        }).forEach(function (r) {
+          return _this5.deselectRow(r);
+        });
+      }
+
+      if (!expand) {
+        (function () {
+          var boundDeselectAllOthers = deselectAllOthers.bind(_this6);
+          _this6.element.addEventListener('afterSelect', boundDeselectAllOthers);
+          setTimeout(function () {
+            _this6.element.removeEventListener('afterSelect', boundDeselectAllOthers);
+          }, 100);
+        })();
+      }
+
       if (!this.isRowSelected(row)) {
         this.element.dispatchEvent(new _customEvent2.default('beforeSelect', {
           cancelable: true,
           detail: {
             row: row,
+            explicitSelected: explicitSelected,
             index: this.indexOfRow(row)
           }
         }));
@@ -234,69 +363,64 @@ var TableSelect = function () {
       }
     }
   }, {
-    key: 'toggleRow',
-    value: function toggleRow(row) {
-      if (!this.isRowSelected(row)) this.selectRow(row);else this.deselectRow(row);
-    }
-  }, {
-    key: 'selectRowExclusive',
-    value: function selectRowExclusive(row) {
-      var _this7 = this;
-
-      function deselectAllOthers() {
-        var _this6 = this;
-
-        this.selectedRows().filter(function (r) {
-          return r !== row;
-        }).forEach(function (r) {
-          return _this6.deselectRow(r);
-        });
-      }
-      var bindedDeselectAllOthers = deselectAllOthers.bind(this);
-
-      this.element.addEventListener('afterSelect', bindedDeselectAllOthers);
-      this.selectRow(row);
-      setTimeout(function () {
-        _this7.element.removeEventListener('afterSelect', bindedDeselectAllOthers);
-      });
-    }
-  }, {
     key: 'selectAll',
     value: function selectAll() {
-      var _this8 = this;
+      var _this7 = this;
 
       this.rows().forEach(function (row) {
-        return _this8.selectRow(row, true);
+        return _this7.selectRow(row, true);
       });
     }
   }, {
     key: 'deselectAll',
     value: function deselectAll() {
-      var _this9 = this;
+      var _this8 = this;
 
       this.rows().forEach(function (row) {
-        return _this9.deselectRow(row);
+        return _this8.deselectRow(row);
       });
     }
   }, {
-    key: 'selectRangeFromLastSelectedToRow',
-    value: function selectRangeFromLastSelectedToRow(row) {
+    key: 'selectRange',
+    value: function selectRange(row) {
+      var _this9 = this;
+
       var expand = arguments.length <= 1 || arguments[1] === undefined ? false : arguments[1];
 
-      if (!this.lastSelectedRow) this.selectRow(row, expand);
+      // console.log(this._lastSelectedRows);
+
+      /*const rowIndex = this.indexOfRow(row);
+      const otherRow = last(this._lastSelectedRows);
+      const otherRowIndex = otherRow ? this.indexOfRow(otherRow) : 0;
+       const firstRow = rowIndex < otherRowIndex ? row : otherRow;
+      const diff = Math.abs(rowIndex - otherRowIndex);*/
+
+      /*let currentRow = this.nextSibling(firstRow);
+      for (var i = 0; i <= diff; i++) {
+        console.log(currentRow);
+        this.selectRow(currentRow, true);
+        currentRow = this.nextSibling(currentRow);
+      }*/
+      this.rows().forEach(function (row) {
+        _this9.selectRow(row, true, false);
+      });
     }
   }]);
 
   return TableSelect;
 }();
 
-window.TableSelect = TableSelect;
-// export default TableSelect;
+exports.default = TableSelect;
+function setDefaultOptions(options) {
+  Object.assign(defaultOptions, options);
+}
+
+if (window) window.TableSelect = TableSelect;
 
 /*
-Todo export and window
 shift und strg, arrow and normal click
-event listener löschen bei destroy
+action
+lodash nur arrow remove und last
  */
 
-},{"custom-event":1}]},{},[2]);
+},{"./events/click":2,"./events/focus":3,"./events/keypress":4,"./events/select":5,"custom-event":1}]},{},[6]);

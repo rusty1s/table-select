@@ -12,7 +12,7 @@
   <body>
     <main>
 
-      <table>
+      <table tabIndex="1">
         <thead>
           <tr>
             <th>#</th>
@@ -43,7 +43,7 @@
             <td>11.0.1</td>
             <td>134.56 GB</td>
           </tr>
-          <tr>
+          <tr class="unselectable">
             <td>3</td>
             <td>Bert</td>
             <td>10/11/1969</td>
@@ -87,14 +87,22 @@
         new TableSelect(table);
 
         table.addEventListener('beforeSelect', function(event) {
-          if (event.detail.index === 0) event.preventDefault();
+          if (event.detail.row.classList.contains('unselectable')) {
+            event.preventDefault();
+          }
         });
 
         table.addEventListener('afterSelect', function(event) {
         });
 
         table.addEventListener('beforeDeselect', function(event) {
-          //event.preventDefault();
+        });
+
+        table.addEventListener('afterDeselect', function(event) {
+        })
+
+        table.addEventListener('action', function(event) {
+          alert('ACTION');
         })
       </script>
 

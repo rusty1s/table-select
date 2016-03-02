@@ -1,27 +1,17 @@
 'use strict';
 
 import CustomEvent from 'custom-event';
+import { remove, last } from 'lodash';
+
+import { onBeforeSelect, onBeforeDeselect } from './events/select';
+import { onKeyPress } from './events/keypress';
+import { onFocusOut } from './events/focus';
+import { onClickRow } from './events/click';
 
 const defaultOptions = {
   className: 'selectable',
   selectedClassName: 'selected',
 };
-
-/*
-function clearSelection() {
-  const selection = window.getSelection ?
-    window.getSelection() :
-    document.selection;
-  if (selection) {
-    if (selection.removeAllRanges) sel.removeAllRanges();
-    else if (selection.empty) sel.empty();
-  }
-}*/
-
-/*
-export function setDefaultOptions(options) {
-  Object.assign(defaultOptions, options);
-}*/
 
 class TableSelect {
   constructor(element, options = {}) {
@@ -35,71 +25,48 @@ class TableSelect {
 
     Object.assign(this, defaultOptions, options, { element });
 
-    this.init();
+    this._init();
   }
 
-  init() {
+  _init() {
     this.element.classList.add(this.className);
-    this.rows().forEach(row => this._initRow(row));
+    this._lastSelectedRows = [];
 
-    this.element.addEventListener('beforeSelect', event => {
-      setTimeout(() => {
-        if (!event.defaultPrevented) {
-          event.detail.row.classList.add(this.selectedClassName);
+    this._onBeforeSelect = onBeforeSelect.bind(this);
+    this._onBeforeDeselect = onBeforeDeselect.bind(this);
+    this._onKeyPress = onKeyPress.bind(this);
+    this._onFocusOut = onFocusOut.bind(this);
 
-          this.element.dispatchEvent(new CustomEvent('afterSelect', {
-            detail: event.detail,
-          }));
-        }
-      });
-    });
+    this.element.addEventListener('beforeSelect', this._onBeforeSelect);
+    this.element.addEventListener('beforeDeselect', this._onBeforeDeselect);
+    this.element.addEventListener('keydown', this._onKeyPress);
+    this.element.addEventListener('focusout', this._onFocusOut);
 
-    this.element.addEventListener('beforeDeselect', event => {
-      setTimeout(() => {
-        if (!event.defaultPrevented) {
-          event.detail.row.classList.remove(this.selectedClassName);
-
-          this.element.dispatchEvent(new CustomEvent('afterDeselect', {
-            detail: event.detail,
-          }));
-        }
-      });
-    });
-  }
-
-  _initRow(row) {
-    row.addEventListener('click', event => {
-      if (event.shiftKey) {
-
-      }
-      else if (event.ctrlKey || event.metaKey) {
-        this.toggleRow(row);
-      }
-      else {
-        this.selectRowExclusive(row);
-      }
+    this.rows().forEach(row => {
+      row.addEventListener('click', onClickRow(row).bind(this));
     });
   }
 
   destroy() {
     this.element.classList.remove(this.className);
-    this.rows().forEach(row => this._destroyRow(row));
 
-    this.element.removeEventListener('beforeSelect');
-    this.element.removeEventListener('beforeDeselect');
-  }
+    this.element.removeEventListener('beforeSelect', this._onBeforeSelect);
+    this.element.removeEventListener('beforeDeselect', this._onBeforeDeselect);
+    this.element.removeEventListener('keydown', this._onKeyPress);
+    this.element.removeEventListener('focusout', this._onFocusOut);
 
-  _destroyRow(row) {
-    this.deselectRow(row);
-    row.removeEventListener('click');
+    this.rows().forEach(row => {
+      this.deselectRow(row);
+      row.removeEventListener('click');
+    });
+
+    Object.keys(this).forEach(name => {
+      this[name] = null;
+    });
   }
 
   rows() {
     return Array.from(this.element.querySelector('tbody').children);
-  }
-
-  length() {
-    return this.rows().length;
   }
 
   indexOfRow(row) {
@@ -118,12 +85,43 @@ class TableSelect {
     return this.selectedRows().map(row => this.indexOfRow(row));
   }
 
-  selectRow(row) {
+  nextSibling(row) {
+    let nextRow = row.nextSibling;
+    while (nextRow !== null && nextRow.nodeType === 3) {
+      nextRow = nextRow.nextSibling;
+    }
+    return nextRow;
+  }
+
+  previousSibling(row) {
+    let previousRow = row.previousSibling;
+    while (previousRow !== null && previousRow.nodeType === 3) {
+      previousRow = previousRow.previousSibling;
+    }
+    return previousRow;
+  }
+
+  selectRow(row, expand = false, explicitSelected = false) {
+    function deselectAllOthers() {
+      this.selectedRows()
+        .filter(r => r !== row)
+        .forEach(r => this.deselectRow(r));
+    }
+
+    if (!expand) {
+      const boundDeselectAllOthers = deselectAllOthers.bind(this);
+      this.element.addEventListener('afterSelect', boundDeselectAllOthers);
+      setTimeout(() => {
+        this.element.removeEventListener('afterSelect', boundDeselectAllOthers);
+      }, 100);
+    }
+
     if (!this.isRowSelected(row)) {
       this.element.dispatchEvent(new CustomEvent('beforeSelect', {
         cancelable: true,
         detail: {
           row,
+          explicitSelected,
           index: this.indexOfRow(row),
         },
       }));
@@ -142,26 +140,6 @@ class TableSelect {
     }
   }
 
-  toggleRow(row) {
-    if (!this.isRowSelected(row)) this.selectRow(row);
-    else this.deselectRow(row);
-  }
-
-  selectRowExclusive(row) {
-    function deselectAllOthers() {
-      this.selectedRows()
-        .filter(r => r !== row)
-        .forEach(r => this.deselectRow(r));
-    }
-    const bindedDeselectAllOthers = deselectAllOthers.bind(this);
-
-    this.element.addEventListener('afterSelect', bindedDeselectAllOthers);
-    this.selectRow(row);
-    setTimeout(() => {
-      this.element.removeEventListener('afterSelect', bindedDeselectAllOthers);
-    });
-  }
-
   selectAll() {
     this.rows().forEach(row => this.selectRow(row, true));
   }
@@ -170,16 +148,38 @@ class TableSelect {
     this.rows().forEach(row => this.deselectRow(row));
   }
 
-  selectRangeFromLastSelectedToRow(row, expand = false) {
-    if (!this.lastSelectedRow) this.selectRow(row, expand);
+  selectRange(row, expand = false) {
+    // console.log(this._lastSelectedRows);
+
+    /*const rowIndex = this.indexOfRow(row);
+    const otherRow = last(this._lastSelectedRows);
+    const otherRowIndex = otherRow ? this.indexOfRow(otherRow) : 0;
+
+    const firstRow = rowIndex < otherRowIndex ? row : otherRow;
+    const diff = Math.abs(rowIndex - otherRowIndex);*/
+
+    /*let currentRow = this.nextSibling(firstRow);
+    for (var i = 0; i <= diff; i++) {
+      console.log(currentRow);
+      this.selectRow(currentRow, true);
+      currentRow = this.nextSibling(currentRow);
+    }*/
+    this.rows().forEach(row => {
+      this.selectRow(row, true, false);
+    });
   }
 }
 
-window.TableSelect = TableSelect;
-// export default TableSelect;
+export default TableSelect;
+
+export function setDefaultOptions(options) {
+  Object.assign(defaultOptions, options);
+}
+
+if (window) window.TableSelect = TableSelect;
 
 /*
-Todo export and window
 shift und strg, arrow and normal click
-event listener löschen bei destroy
+action
+lodash nur arrow remove und last
  */
