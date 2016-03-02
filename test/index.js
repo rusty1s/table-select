@@ -1,9 +1,6 @@
 'use strict';
 
-import { test } from 'tape';
-
-test('test', t => {
-  t.equal('2', '3');
-
-  t.end();
-});
+import './spec/setup';
+import './spec/init';
+import './spec/select';
+import './spec/events';
