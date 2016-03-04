@@ -94,7 +94,7 @@ export default class TableSelect {
     if (!row) return null;
 
     let nextRow = row.nextSibling;
-    while (nextRow !== null && nextRow.nodeType === 3) {
+    while (nextRow !== null && (nextRow.nodeType === 3 || !this.shouldSelectRow(nextRow))) {
       nextRow = nextRow.nextSibling;
     }
     return nextRow;
@@ -104,7 +104,7 @@ export default class TableSelect {
     if (!row) return null;
 
     let previousRow = row.previousSibling;
-    while (previousRow !== null && previousRow.nodeType === 3) {
+    while (previousRow !== null && (previousRow.nodeType === 3 || !this.shouldSelectRow(previousRow))) {
       previousRow = previousRow.previousSibling;
     }
     return previousRow;
@@ -142,10 +142,8 @@ export default class TableSelect {
       this._lastSelectedRows = [];
     }
 
-    if (saveAsLastSelected) {
-      remove(this._lastSelectedRows, r => r === row);
-      this._lastSelectedRows.push(row);
-    }
+    remove(this._lastSelectedRows, r => r === row);
+    if (saveAsLastSelected) this._lastSelectedRows.push(row);
 
     if (!this.isRowSelected(row)) {
       this.element.dispatchEvent(new CustomEvent('beforeSelect', this._rowDetail(row)));
@@ -188,15 +186,20 @@ export default class TableSelect {
     const lastSelectedRow = this.lastSelectedRow();
     const rowIndex = this.indexOfRow(row);
     const lastSelectedRowIndex = lastSelectedRow ? this.indexOfRow(lastSelectedRow) : 0;
-    const index1 = Math.min(rowIndex, lastSelectedRowIndex);
-    const index2 = Math.max(rowIndex, lastSelectedRowIndex);
+    let index1 = Math.min(rowIndex, lastSelectedRowIndex);
+    let index2 = Math.max(rowIndex, lastSelectedRowIndex);
 
     if (!expand) {
      [...rows.slice(0, index1), ...rows.slice(index2+1, rows.length)]
        .forEach(r => this.deselectRow(r));
     }
 
-    rows.slice(index1, index2+1).forEach(r => {
+    if (lastSelectedRowIndex < rowIndex) {
+      index1++;
+      index2++;
+    }
+
+    rows.slice(index1, index2).forEach(r => {
       this.selectRow(r, true, false);
     });
   }

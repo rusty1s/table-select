@@ -2866,42 +2866,84 @@ var _head = require('lodash/head');
 
 var _head2 = _interopRequireDefault(_head);
 
+var _last = require('lodash/last');
+
+var _last2 = _interopRequireDefault(_last);
+
 exports.onKeyDown = onKeyDown;
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function arrowUp() {}
+function arrowUp(event) {
+  if (!event.shiftKey || !this.lastSelectedRow()) {
+    var row = (0, _last2.default)(this.rows());
+    if (this.lastSelectedRow()) row = this.previousRow(this.lastSelectedRow());
+    this.selectRow(row, false, true);
+  } else {
+    var row = this.lastSelectedRow();
 
-function arrowDown() {
+    var nextRow = this.nextRow(row);
+    while (nextRow && this.isRowSelected(nextRow)) {
+      nextRow = this.nextRow(nextRow);
+    }
+
+    if (nextRow && row !== this.previousRow(nextRow)) {
+      this.deselectRow(this.previousRow(nextRow));
+      return;
+    } else if (!nextRow) {
+      this.deselectRow((0, _last2.default)(this.rows()));
+      return;
+    }
+
+    var previousRow = this.previousRow(row);
+    while (previousRow && this.isRowSelected(previousRow)) {
+      previousRow = this.previousRow(previousRow);
+    }
+
+    this.selectRow(previousRow, true, false);
+  }
+}
+
+function arrowDown(event) {
   if (event.ctrlKey || event.metaKey) {
     this.action();
     return;
   }
 
-  var nextRow = (0, _head2.default)(this.rows());
-  if (!nextRow) return;
+  if (!event.shiftKey || !this.lastSelectedRow()) {
+    var row = (0, _head2.default)(this.rows());
+    if (this.lastSelectedRow()) row = this.nextRow(this.lastSelectedRow());
+    this.selectRow(row, false, true);
+  } else {
+    var row = this.lastSelectedRow();
 
-  if (this.lastSelectedRow()) {
-    nextRow = this.lastSelectedRow();
-    if (this.nextRow(nextRow)) {
+    var previousRow = this.previousRow(row);
+    while (previousRow && this.isRowSelected(previousRow)) {
+      previousRow = this.previousRow(previousRow);
+    }
+
+    if (previousRow && row !== this.nextRow(previousRow)) {
+      this.deselectRow(this.nextRow(previousRow));
+      return;
+    } else if (!previousRow) {
+      this.deselectRow((0, _head2.default)(this.rows()));
+      return;
+    }
+
+    var nextRow = this.nextRow(row);
+    while (nextRow && this.isRowSelected(nextRow)) {
       nextRow = this.nextRow(nextRow);
     }
+
+    this.selectRow(nextRow, true, false);
   }
-
-  var index = this.indexOfRow(nextRow);
-
-  while (nextRow && !this.shouldSelectRow(nextRow)) {
-    nextRow = this.nextRow(nextRow);
-  }
-
-  this.selectRow(nextRow, event.shiftKey, true);
 }
 
 function onKeyDown(event) {
-  if (event.keyCode === 38) arrowUp.call(this);else if (event.keyCode === 40) arrowDown.call(this);
+  if (event.keyCode === 38) arrowUp.call(this, event);else if (event.keyCode === 40) arrowDown.call(this, event);
 }
 
-},{"lodash/head":73}],97:[function(require,module,exports){
+},{"lodash/head":73,"lodash/last":88}],97:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -3070,7 +3112,7 @@ var TableSelect = function () {
       if (!row) return null;
 
       var nextRow = row.nextSibling;
-      while (nextRow !== null && nextRow.nodeType === 3) {
+      while (nextRow !== null && (nextRow.nodeType === 3 || !this.shouldSelectRow(nextRow))) {
         nextRow = nextRow.nextSibling;
       }
       return nextRow;
@@ -3081,7 +3123,7 @@ var TableSelect = function () {
       if (!row) return null;
 
       var previousRow = row.previousSibling;
-      while (previousRow !== null && previousRow.nodeType === 3) {
+      while (previousRow !== null && (previousRow.nodeType === 3 || !this.shouldSelectRow(previousRow))) {
         previousRow = previousRow.previousSibling;
       }
       return previousRow;
@@ -3130,12 +3172,10 @@ var TableSelect = function () {
         this._lastSelectedRows = [];
       }
 
-      if (saveAsLastSelected) {
-        (0, _remove2.default)(this._lastSelectedRows, function (r) {
-          return r === row;
-        });
-        this._lastSelectedRows.push(row);
-      }
+      (0, _remove2.default)(this._lastSelectedRows, function (r) {
+        return r === row;
+      });
+      if (saveAsLastSelected) this._lastSelectedRows.push(row);
 
       if (!this.isRowSelected(row)) {
         this.element.dispatchEvent(new _customEvent2.default('beforeSelect', this._rowDetail(row)));
@@ -3208,7 +3248,12 @@ var TableSelect = function () {
         });
       }
 
-      rows.slice(index1, index2 + 1).forEach(function (r) {
+      if (lastSelectedRowIndex < rowIndex) {
+        index1++;
+        index2++;
+      }
+
+      rows.slice(index1, index2).forEach(function (r) {
         _this7.selectRow(r, true, false);
       });
     }
