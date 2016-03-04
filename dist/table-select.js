@@ -2890,7 +2890,7 @@ function arrowUp(event) {
     if (nextRow && row !== this.previousRow(nextRow)) {
       this.deselectRow(this.previousRow(nextRow));
       return;
-    } else if (!nextRow) {
+    } else if (!nextRow && this.indexOfRow(this.lastSelectedRow()) !== this.rows().length - 1) {
       this.deselectRow((0, _last2.default)(this.rows()));
       return;
     }
@@ -2925,7 +2925,7 @@ function arrowDown(event) {
     if (previousRow && row !== this.nextRow(previousRow)) {
       this.deselectRow(this.nextRow(previousRow));
       return;
-    } else if (!previousRow) {
+    } else if (!previousRow && this.indexOfRow(this.lastSelectedRow()) !== 0) {
       this.deselectRow((0, _head2.default)(this.rows()));
       return;
     }
