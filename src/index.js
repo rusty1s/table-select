@@ -1,22 +1,24 @@
 'use strict';
 
 import CustomEvent from 'custom-event';
-import { remove, last } from 'lodash';
+import { remove, head, last } from 'lodash';
 
-import { onBeforeSelect, onBeforeDeselect } from './events/select';
-import { onKeyPress } from './events/keypress';
+import { onKeyDown } from './events/keydown';
 import { onFocusOut } from './events/focus';
+import { onMouseDown } from './events/mousedown';
 import { onClickRow } from './events/click';
+import { onDblClickRow } from './events/dblclick';
 
 /*
- shift und strg, arrow and normal click
- action
- lodash nur arrow remove und last
+arrow + action
+lodash nur arrow remove und last
  */
 
 const defaultOptions = {
   className: 'selectable',
   selectedClassName: 'selected',
+  shouldSelectRow() { return true; },
+  shouldDeselectRow() { return true; },
 };
 
 export default class TableSelect {
@@ -36,34 +38,33 @@ export default class TableSelect {
 
   _init() {
     this.element.classList.add(this.className);
+
     this._lastSelectedRows = [];
-
-    this._onBeforeSelect = onBeforeSelect.bind(this);
-    this._onBeforeDeselect = onBeforeDeselect.bind(this);
-    this._onKeyPress = onKeyPress.bind(this);
+    this._onKeyDown = onKeyDown.bind(this);
     this._onFocusOut = onFocusOut.bind(this);
+    this._onMouseDown = onMouseDown.bind(this);
 
-    this.element.addEventListener('beforeSelect', this._onBeforeSelect);
-    this.element.addEventListener('beforeDeselect', this._onBeforeDeselect);
-    this.element.addEventListener('keydown', this._onKeyPress);
+    this.element.addEventListener('keydown', this._onKeyDown);
     this.element.addEventListener('focusout', this._onFocusOut);
+    this.element.addEventListener('mousedown', this._onMouseDown);
 
     this.rows().forEach(row => {
       row.addEventListener('click', onClickRow(row).bind(this));
+      row.addEventListener('dblclick', onDblClickRow(row).bind(this));
     });
   }
 
   destroy() {
     this.element.classList.remove(this.className);
 
-    this.element.removeEventListener('beforeSelect', this._onBeforeSelect);
-    this.element.removeEventListener('beforeDeselect', this._onBeforeDeselect);
     this.element.removeEventListener('keydown', this._onKeyPress);
     this.element.removeEventListener('focusout', this._onFocusOut);
+    this.element.removeEventListener('mousedown', this._onMouseDown);
 
     this.rows().forEach(row => {
       this.deselectRow(row);
       row.removeEventListener('click');
+      row.removeEventListener('dblclick');
     });
 
     Object.keys(this).forEach(name => {
@@ -75,11 +76,9 @@ export default class TableSelect {
     return Array.from(this.element.querySelector('tbody').children);
   }
 
-  indexOfRow(row) {
-    return this.rows().indexOf(row);
-  }
-
   isRowSelected(row) {
+    if (!row) return false;
+
     return row.classList.contains(this.selectedClassName);
   }
 
@@ -87,11 +86,13 @@ export default class TableSelect {
     return this.rows().filter(row => this.isRowSelected(row));
   }
 
-  selectedRowIndices() {
-    return this.selectedRows().map(row => this.indexOfRow(row));
+  lastSelectedRow() {
+    return last(this._lastSelectedRows);
   }
 
   nextRow(row) {
+    if (!row) return null;
+
     let nextRow = row.nextSibling;
     while (nextRow !== null && nextRow.nodeType === 3) {
       nextRow = nextRow.nextSibling;
@@ -100,6 +101,8 @@ export default class TableSelect {
   }
 
   previousRow(row) {
+    if (!row) return null;
+
     let previousRow = row.previousSibling;
     while (previousRow !== null && previousRow.nodeType === 3) {
       previousRow = previousRow.previousSibling;
@@ -107,47 +110,73 @@ export default class TableSelect {
     return previousRow;
   }
 
-  selectRow(row, expand = false, explicitSelected = false) {
-    function deselectAllOthers() {
+  indexOfRow(row) {
+    return this.rows().indexOf(row);
+  }
+
+  _rowDetail(row) {
+    return {
+      detail: {
+        row,
+      }
+    };
+  }
+
+  _selectedRowDetails() {
+    return {
+      detail: {
+        rows: this.selectedRows(),
+      }
+    };
+  }
+
+  selectRow(row, expand = false, saveAsLastSelected = true) {
+    if (!row) return false;
+    if (!this.shouldSelectRow(row)) return false;
+
+    if (!expand) {
       this.selectedRows()
         .filter(r => r !== row)
         .forEach(r => this.deselectRow(r));
+
+      this._lastSelectedRows = [];
     }
 
-    if (!expand) {
-      const boundDeselectAllOthers = deselectAllOthers.bind(this);
-      this.element.addEventListener('afterSelect', boundDeselectAllOthers);
-      setTimeout(() => {
-        this.element.removeEventListener('afterSelect', boundDeselectAllOthers);
-      }, 100);
+    if (saveAsLastSelected) {
+      remove(this._lastSelectedRows, r => r === row);
+      this._lastSelectedRows.push(row);
     }
 
     if (!this.isRowSelected(row)) {
-      this.element.dispatchEvent(new CustomEvent('beforeSelect', {
-        cancelable: true,
-        detail: {
-          row,
-          explicitSelected,
-          index: this.indexOfRow(row),
-        },
-      }));
+      this.element.dispatchEvent(new CustomEvent('beforeSelect', this._rowDetail(row)));
+      row.classList.add(this.selectedClassName);
+      this.element.dispatchEvent(new CustomEvent('afterSelect', this._rowDetail(row)));
     }
+
+    return true;
   }
 
   deselectRow(row) {
+    if (!row) return false;
+    if (!this.shouldSelectRow(row)) return false;
+
+    remove(this._lastSelectedRows, r => r === row);
+
     if (this.isRowSelected(row)) {
-      this.element.dispatchEvent(new CustomEvent('beforeDeselect', {
-        cancelable: true,
-        detail: {
-          row,
-          index: this.indexOfRow(row),
-        },
-      }));
+      this.element.dispatchEvent(new CustomEvent('beforeDeselect', this._rowDetail(row)));
+      row.classList.remove(this.selectedClassName);
+      this.element.dispatchEvent(new CustomEvent('afterDeselect', this._rowDetail(row)));
     }
   }
 
+  toggleRow(row, expand = false, saveAsLastSelected = true) {
+    if (!this.isRowSelected(row)) this.selectRow(row, expand, saveAsLastSelected);
+    else this.deselectRow(row);
+  }
+
   selectAll() {
-    this.rows().forEach(row => this.selectRow(row, true));
+    this._lastSelectedRows = [];
+    this.rows().forEach(row => this.selectRow(row, true, false));
   }
 
   deselectAll() {
@@ -155,24 +184,27 @@ export default class TableSelect {
   }
 
   selectRange(row, expand = false) {
-    // console.log(this._lastSelectedRows);
-
+    const rows = this.rows();
+    const lastSelectedRow = this.lastSelectedRow();
     const rowIndex = this.indexOfRow(row);
-    const otherRow = last(this._lastSelectedRows);
-    const otherRowIndex = otherRow ? this.indexOfRow(otherRow) : 0;
+    const lastSelectedRowIndex = lastSelectedRow ? this.indexOfRow(lastSelectedRow) : 0;
+    const index1 = Math.min(rowIndex, lastSelectedRowIndex);
+    const index2 = Math.max(rowIndex, lastSelectedRowIndex);
 
-    const firstRow = rowIndex < otherRowIndex ? row : otherRow;
-    const diff = Math.abs(rowIndex - otherRowIndex);
-
-    let currentRow = this.nextRow(firstRow);
-    for (var i = 0; i < diff; i++) {
-      //console.log(currentRow);
-      this.selectRow(currentRow, true, false);
-      currentRow = this.nextRow(currentRow);
+    if (!expand) {
+     [...rows.slice(0, index1), ...rows.slice(index2+1, rows.length)]
+       .forEach(r => this.deselectRow(r));
     }
-    this.rows().forEach(r => {
-      //this.selectRow(r, true, false);
+
+    rows.slice(index1, index2+1).forEach(r => {
+      this.selectRow(r, true, false);
     });
+  }
+
+  action() {
+    if (this.selectedRows().length > 0 ) {
+      this.element.dispatchEvent(new CustomEvent('action', this._selectedRowDetails()));
+    }
   }
 }
 

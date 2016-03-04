@@ -84,12 +84,13 @@
 
       <script>
         var table = document.querySelector('table');
-        new TableSelect(table);
+        new TableSelect(table, {
+          shouldSelectRow(row) {
+            return !row.classList.contains('unselectable');
+          }
+        });
 
         table.addEventListener('beforeSelect', function(event) {
-          if (event.detail.row.classList.contains('unselectable')) {
-            event.preventDefault();
-          }
         });
 
         table.addEventListener('afterSelect', function(event) {
@@ -102,7 +103,7 @@
         })
 
         table.addEventListener('action', function(event) {
-          alert('ACTION');
+          alert('Perform action on ' + event.detail.rows.length + ' row(s)!');
         })
       </script>
 
