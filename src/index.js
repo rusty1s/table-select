@@ -17,6 +17,7 @@ lodash nur arrow remove und last
 const defaultOptions = {
   className: 'selectable',
   selectedClassName: 'selected',
+  tabIndex: 1,
   shouldSelectRow() { return true; },
   shouldDeselectRow() { return true; },
 };
@@ -38,6 +39,7 @@ export default class TableSelect {
 
   _init() {
     this.element.classList.add(this.className);
+    this.element.tabIndex = this.tabIndex;
 
     this._lastSelectedRows = [];
     this._onKeyDown = onKeyDown.bind(this);
@@ -56,6 +58,7 @@ export default class TableSelect {
 
   destroy() {
     this.element.classList.remove(this.className);
+    this.element.tabIndex = null;
 
     this.element.removeEventListener('keydown', this._onKeyPress);
     this.element.removeEventListener('focusout', this._onFocusOut);

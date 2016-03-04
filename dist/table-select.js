@@ -3011,6 +3011,7 @@ lodash nur arrow remove und last
 var defaultOptions = {
   className: 'selectable',
   selectedClassName: 'selected',
+  tabIndex: 1,
   shouldSelectRow: function shouldSelectRow() {
     return true;
   },
@@ -3044,6 +3045,7 @@ var TableSelect = function () {
       var _this = this;
 
       this.element.classList.add(this.className);
+      this.element.tabIndex = this.tabIndex;
 
       this._lastSelectedRows = [];
       this._onKeyDown = _keydown.onKeyDown.bind(this);
@@ -3065,6 +3067,7 @@ var TableSelect = function () {
       var _this2 = this;
 
       this.element.classList.remove(this.className);
+      this.element.tabIndex = null;
 
       this.element.removeEventListener('keydown', this._onKeyPress);
       this.element.removeEventListener('focusout', this._onFocusOut);
