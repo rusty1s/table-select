@@ -1,5 +1,10 @@
 'use strict';
 
+/**
+ * Returns the click behaviour for a row.
+ * @param {HTMLTableRowElement} row
+ * @returns {Function}
+ */
 export function onClickRow(row) {
   return function onClick(event) {
     if (event.shiftKey) {

@@ -305,5 +305,8 @@ if (window) window.TableSelect = TableSelect;
 
 /*
  lodash nur arrow remove und last -> webpack
+ select range überarbeiten
+ keydown commentaries
+ keydown hat bugs
  */
 

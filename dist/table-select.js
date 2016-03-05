@@ -2811,6 +2811,12 @@ module.exports = toString;
 },{"./_Symbol":7,"./isSymbol":85}],93:[function(require,module,exports){
 'use strict';
 
+/**
+ * Returns the click behaviour for a row.
+ * @param {HTMLTableRowElement} row
+ * @returns {Function}
+ */
+
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -2870,28 +2876,59 @@ function rowDetails(rows) {
   };
 }
 
+/**
+ * Triggers the `action` event on `element` with details `rows`.
+ * @param {HTMLTableElement} element
+ * @param {Array} rows - Array of HTMLTableRowElements.
+ */
 function action(element, rows) {
   element.dispatchEvent(new _customEvent2.default('action', rowDetails(rows)));
 }
 
+/**
+ * Triggers the `beforeSelect` event on `element` with details `row`.
+ * @param {HTMLTableElement} element
+ * @param {HTMLTableRowElement} row
+ */
 function beforeSelect(element, row) {
   element.dispatchEvent(new _customEvent2.default('beforeSelect', rowDetail(row)));
 }
 
+/**
+ * Triggers the `afterSelect` event on `element` with details `row`.
+ * @param {HTMLTableElement} element
+ * @param {HTMLTableRowElement} row
+ */
 function afterSelect(element, row) {
   element.dispatchEvent(new _customEvent2.default('afterSelect', rowDetail(row)));
 }
 
+/**
+ * Triggers the `beforeDeselect` event on `element` with details `row`.
+ * @param {HTMLTableElement} element
+ * @param {HTMLTableRowElement} row
+ */
 function beforeDeselect(element, row) {
   element.dispatchEvent(new _customEvent2.default('beforeDeselect', rowDetail(row)));
 }
 
+/**
+ * Triggers the `afterDeselect` event on `element` with details `row`.
+ * @param {HTMLTableElement} element
+ * @param {HTMLTableRowElement} row
+ */
 function afterDeselect(element, row) {
   element.dispatchEvent(new _customEvent2.default('afterDeselect', rowDetail(row)));
 }
 
 },{"custom-event":1}],95:[function(require,module,exports){
 'use strict';
+
+/**
+ * Returns the double click behaviour for a row.
+ * @param {HTMLTableRowElement} row
+ * @returns {Function}
+ */
 
 Object.defineProperty(exports, "__esModule", {
   value: true
@@ -2911,6 +2948,10 @@ function onDoubleClickRow(row) {
 
 },{}],96:[function(require,module,exports){
 'use strict';
+
+/**
+ * The focus out table behaviour
+ */
 
 Object.defineProperty(exports, "__esModule", {
   value: true
@@ -3022,6 +3063,10 @@ function onKeyDown(event) {
 },{"lodash/head":73,"lodash/last":88}],98:[function(require,module,exports){
 'use strict';
 
+/**
+ * Clears the selection in the document.
+ */
+
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -3034,6 +3079,11 @@ function clearSelection() {
   }
 }
 
+/**
+ * Clears the selection in the document on mouse down
+ * when the shift key is pressed.
+ * @param event
+ */
 function onMouseDown(event) {
   if (event.shiftKey) {
     clearSelection();
@@ -3475,7 +3525,9 @@ if (window) window.TableSelect = TableSelect;
 
 /*
  lodash nur arrow remove und last -> webpack
- return in select/deselect/toggle kann glaub ich raus
+ select range überarbeiten
+ keydown commentaries
+ keydown hat bugs
  */
 
 },{"./events/click":93,"./events/dispatch":94,"./events/doubleclick":95,"./events/focus":96,"./events/keydown":97,"./events/mousedown":98,"lodash/last":88,"lodash/remove":90}]},{},[99]);
