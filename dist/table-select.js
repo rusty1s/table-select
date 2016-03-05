@@ -2948,7 +2948,7 @@ function arrowUp(event) {
       row = this.previousRow(row);
     }
 
-    this.selectRow(row | (0, _head2.default)(this.rows()), false, true);
+    this.selectRow(row || (0, _head2.default)(this.rows()), false, true);
   } else {
     var row = this.lastSelectedRow();
 
@@ -3081,8 +3081,6 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-console.log(dispatch);
-
 /**
  * @param {string} className - The class name of the table.
  * @param {number} tabIndex - The tab index of the table.
@@ -3200,7 +3198,6 @@ var TableSelect = function () {
     key: 'isRowSelected',
     value: function isRowSelected(row) {
       if (!row) return false;
-
       return row.classList.contains(this.selectedClassName);
     }
 
@@ -3232,6 +3229,21 @@ var TableSelect = function () {
     }
 
     /**
+     * Checks if the row is selectable.
+     * @param {HTMLTableRowElement} row
+     * @returns {boolean}
+     */
+
+  }, {
+    key: 'selectableRow',
+    value: function selectableRow(row) {
+      if (row && !row.nodeType === 3) return false;
+      if (row && !this.shouldSelectRow(row)) return false;
+
+      return true;
+    }
+
+    /**
      * Returns the next row of `row` which can be selected.
      * Returns `null` if `row` is the last element in the table
      * which can be selected.
@@ -3245,9 +3257,10 @@ var TableSelect = function () {
       if (!row) return null;
 
       var nextRow = row.nextSibling;
-      while (nextRow && (nextRow.nodeType === 3 || !this.shouldSelectRow(nextRow))) {
+      while (nextRow && !this.selectableRow(nextRow)) {
         nextRow = nextRow.nextSibling;
       }
+
       return nextRow;
     }
 
@@ -3265,9 +3278,10 @@ var TableSelect = function () {
       if (!row) return null;
 
       var previousRow = row.previousSibling;
-      while (previousRow && (previousRow.nodeType === 3 || !this.shouldSelectRow(previousRow))) {
+      while (previousRow && !this.selectableRow(previousRow)) {
         previousRow = previousRow.previousSibling;
       }
+
       return previousRow;
     }
 
@@ -3290,7 +3304,6 @@ var TableSelect = function () {
      * @param expand - Already selected rows get not deselected. Default: false.
      * @param saveAsLastSelected - Explicitly save this row as last selected.
      * Default: true.
-     * @returns {boolean} - Returns whether the selection was successful.
      */
 
   }, {
@@ -3301,8 +3314,8 @@ var TableSelect = function () {
       var expand = arguments.length <= 1 || arguments[1] === undefined ? false : arguments[1];
       var saveAsLastSelected = arguments.length <= 2 || arguments[2] === undefined ? true : arguments[2];
 
-      if (!row) return false;
-      if (!this.shouldSelectRow(row)) return false;
+      if (!row) return;
+      if (!this.shouldSelectRow(row)) return;
 
       if (!expand) {
         this.selectedRows().filter(function (r) {
@@ -3310,8 +3323,6 @@ var TableSelect = function () {
         }).forEach(function (r) {
           return _this4.deselectRow(r);
         });
-
-        this._lastSelectedRows = [];
       }
 
       (0, _remove2.default)(this._lastSelectedRows, function (r) {
@@ -3324,21 +3335,18 @@ var TableSelect = function () {
         row.classList.add(this.selectedClassName);
         dispatch.afterSelect(this.element, row);
       }
-
-      return true;
     }
 
     /**
      * Deselects a row.
      * @param {HTMLTableRowElement} row
-     * @returns {boolean} - Returns whether the deselection was successful.
      */
 
   }, {
     key: 'deselectRow',
     value: function deselectRow(row) {
-      if (!row) return false;
-      if (!this.shouldSelectRow(row)) return false;
+      if (!row) return;
+      if (!this.shouldSelectRow(row)) return;
 
       (0, _remove2.default)(this._lastSelectedRows, function (r) {
         return r === row;
@@ -3349,8 +3357,6 @@ var TableSelect = function () {
         row.classList.remove(this.selectedClassName);
         dispatch.afterDeselect(this.element, row);
       }
-
-      return true;
     }
 
     /**
@@ -3359,7 +3365,6 @@ var TableSelect = function () {
      * @param expand - Already selected rows get not deselected. Default: false.
      * @param saveAsLastSelected - Explicitly save this row as last selected.
      * Default: true.
-     * @returns {boolean} - Returns whether the toggling was successful.
      */
 
   }, {
@@ -3369,10 +3374,10 @@ var TableSelect = function () {
       var saveAsLastSelected = arguments.length <= 2 || arguments[2] === undefined ? true : arguments[2];
 
       if (!this.isRowSelected(row)) {
-        return this.selectRow(row, expand, saveAsLastSelected);
+        this.selectRow(row, expand, saveAsLastSelected);
+      } else {
+        this.deselectRow(row);
       }
-
-      return this.deselectRow(row);
     }
 
     /**

@@ -11,7 +11,7 @@ function arrowUp(event) {
       row = this.previousRow(row);
     }
 
-    this.selectRow(row | head(this.rows()), false, true);
+    this.selectRow(row || head(this.rows()), false, true);
   } else {
     const row = this.lastSelectedRow();
 

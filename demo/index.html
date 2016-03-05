@@ -6,6 +6,8 @@
     <title>table-select | rusty1s</title>
 
     <link rel="stylesheet" type="text/css" href="style.css"/>
+
+    <script src="https://raw.githubusercontent.com/eligrey/classList.js/master/classList.min.js"></script>
     <script src="../dist/table-select.js"></script>
   </head>
 
@@ -139,22 +141,8 @@
       <script>
         var table = document.querySelector('table');
         new TableSelect(table, {
-          shouldSelectRow(row) {
-            return !row.classList.contains('unselectable');
-          }
+          shouldSelectRow(row) { return !row.classList.contains('unselectable'); }
         });
-
-        table.addEventListener('beforeSelect', function(event) {
-        });
-
-        table.addEventListener('afterSelect', function(event) {
-        });
-
-        table.addEventListener('beforeDeselect', function(event) {
-        });
-
-        table.addEventListener('afterDeselect', function(event) {
-        })
 
         table.addEventListener('action', function(event) {
           alert('Perform action on ' + event.detail.rows.length + ' row(s)!');
