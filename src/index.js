@@ -2,7 +2,7 @@
 
 import { remove, last } from 'lodash';
 
-import dispatch from './events/dispatch';
+import * as dispatch from './events/dispatch';
 import { onKeyDown } from './events/keydown';
 import { onFocusOut } from './events/focus';
 import { onMouseDown } from './events/mousedown';

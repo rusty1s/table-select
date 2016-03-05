@@ -3061,7 +3061,7 @@ exports.setDefaultOptions = setDefaultOptions;
 
 var _dispatch = require('./events/dispatch');
 
-var _dispatch2 = _interopRequireDefault(_dispatch);
+var dispatch = _interopRequireWildcard(_dispatch);
 
 var _keydown = require('./events/keydown');
 
@@ -3073,11 +3073,15 @@ var _click = require('./events/click');
 
 var _doubleclick = require('./events/doubleclick');
 
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+console.log(dispatch);
 
 /**
  * @param {string} className - The class name of the table.
@@ -3316,9 +3320,9 @@ var TableSelect = function () {
       if (saveAsLastSelected) this._lastSelectedRows.push(row);
 
       if (!this.isRowSelected(row)) {
-        _dispatch2.default.beforeSelect(this.element, row);
+        dispatch.beforeSelect(this.element, row);
         row.classList.add(this.selectedClassName);
-        _dispatch2.default.afterSelect(this.element, row);
+        dispatch.afterSelect(this.element, row);
       }
 
       return true;
@@ -3341,9 +3345,9 @@ var TableSelect = function () {
       });
 
       if (this.isRowSelected(row)) {
-        _dispatch2.default.beforeDeselect(this.element, row);
+        dispatch.beforeDeselect(this.element, row);
         row.classList.remove(this.selectedClassName);
-        _dispatch2.default.afterDeselect(this.element, row);
+        dispatch.afterDeselect(this.element, row);
       }
 
       return true;
@@ -3443,7 +3447,7 @@ var TableSelect = function () {
     key: 'action',
     value: function action() {
       if (this.selectedRows().length > 0) {
-        _dispatch2.default.action(this.element, this.selectedRows());
+        dispatch.action(this.element, this.selectedRows());
       }
     }
   }]);
