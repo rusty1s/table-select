@@ -1,7 +1,7 @@
 'use strict';
 
 import CustomEvent from 'custom-event';
-import { remove, head, last } from 'lodash';
+import { remove, last } from 'lodash';
 
 import { onKeyDown } from './events/keydown';
 import { onFocusOut } from './events/focus';
@@ -97,7 +97,8 @@ export default class TableSelect {
     if (!row) return null;
 
     let nextRow = row.nextSibling;
-    while (nextRow !== null && (nextRow.nodeType === 3 || !this.shouldSelectRow(nextRow))) {
+    while (nextRow &&
+    (nextRow.nodeType === 3 || !this.shouldSelectRow(nextRow))) {
       nextRow = nextRow.nextSibling;
     }
     return nextRow;
@@ -107,7 +108,8 @@ export default class TableSelect {
     if (!row) return null;
 
     let previousRow = row.previousSibling;
-    while (previousRow !== null && (previousRow.nodeType === 3 || !this.shouldSelectRow(previousRow))) {
+    while (previousRow &&
+    (previousRow.nodeType === 3 || !this.shouldSelectRow(previousRow))) {
       previousRow = previousRow.previousSibling;
     }
     return previousRow;
@@ -121,7 +123,7 @@ export default class TableSelect {
     return {
       detail: {
         row,
-      }
+      },
     };
   }
 
@@ -129,7 +131,7 @@ export default class TableSelect {
     return {
       detail: {
         rows: this.selectedRows(),
-      }
+      },
     };
   }
 
@@ -149,9 +151,11 @@ export default class TableSelect {
     if (saveAsLastSelected) this._lastSelectedRows.push(row);
 
     if (!this.isRowSelected(row)) {
-      this.element.dispatchEvent(new CustomEvent('beforeSelect', this._rowDetail(row)));
+      this.element
+        .dispatchEvent(new CustomEvent('beforeSelect', this._rowDetail(row)));
       row.classList.add(this.selectedClassName);
-      this.element.dispatchEvent(new CustomEvent('afterSelect', this._rowDetail(row)));
+      this.element
+        .dispatchEvent(new CustomEvent('afterSelect', this._rowDetail(row)));
     }
 
     return true;
@@ -164,15 +168,20 @@ export default class TableSelect {
     remove(this._lastSelectedRows, r => r === row);
 
     if (this.isRowSelected(row)) {
-      this.element.dispatchEvent(new CustomEvent('beforeDeselect', this._rowDetail(row)));
+      this.element
+        .dispatchEvent(new CustomEvent('beforeDeselect', this._rowDetail(row)));
       row.classList.remove(this.selectedClassName);
-      this.element.dispatchEvent(new CustomEvent('afterDeselect', this._rowDetail(row)));
+      this.element
+        .dispatchEvent(new CustomEvent('afterDeselect', this._rowDetail(row)));
     }
+
+    return true;
   }
 
   toggleRow(row, expand = false, saveAsLastSelected = true) {
-    if (!this.isRowSelected(row)) this.selectRow(row, expand, saveAsLastSelected);
-    else this.deselectRow(row);
+    if (!this.isRowSelected(row)) {
+      this.selectRow(row, expand, saveAsLastSelected);
+    } else this.deselectRow(row);
   }
 
   selectAll() {
@@ -188,13 +197,15 @@ export default class TableSelect {
     const rows = this.rows();
     const lastSelectedRow = this.lastSelectedRow();
     const rowIndex = this.indexOfRow(row);
-    const lastSelectedRowIndex = lastSelectedRow ? this.indexOfRow(lastSelectedRow) : 0;
+    const lastSelectedRowIndex = lastSelectedRow ?
+      this.indexOfRow(lastSelectedRow) :
+      0;
     let index1 = Math.min(rowIndex, lastSelectedRowIndex);
     let index2 = Math.max(rowIndex, lastSelectedRowIndex);
 
     if (!expand) {
-     [...rows.slice(0, index1), ...rows.slice(index2+1, rows.length)]
-       .forEach(r => this.deselectRow(r));
+      [...rows.slice(0, index1), ...rows.slice(index2 + 1, rows.length)]
+        .forEach(r => this.deselectRow(r));
     }
 
     if (lastSelectedRowIndex < rowIndex) {
@@ -208,8 +219,9 @@ export default class TableSelect {
   }
 
   action() {
-    if (this.selectedRows().length > 0 ) {
-      this.element.dispatchEvent(new CustomEvent('action', this._selectedRowDetails()));
+    if (this.selectedRows().length > 0) {
+      this.element
+        .dispatchEvent(new CustomEvent('action', this._selectedRowDetails()));
     }
   }
 }

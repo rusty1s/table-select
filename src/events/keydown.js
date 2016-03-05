@@ -20,10 +20,11 @@ function arrowUp(event) {
       nextRow = this.nextRow(nextRow);
     }
 
+    const index = this.rows().length - 1;
     if (nextRow && row !== this.previousRow(nextRow)) {
       this.deselectRow(this.previousRow(nextRow));
       return;
-    } else if (!nextRow && this.indexOfRow(this.lastSelectedRow()) !== this.rows().length-1) {
+    } else if (!nextRow && this.indexOfRow(this.lastSelectedRow()) !== index) {
       this.deselectRow(last(this.rows()));
       return;
     }

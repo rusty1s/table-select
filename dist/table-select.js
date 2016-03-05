@@ -3287,6 +3287,6 @@ function setDefaultOptions(options) {
   Object.assign(defaultOptions, options);
 }
 
-if (window) window.TableSelect = TableSelect;
+//if (window) window.TableSelect = TableSelect;
 
 },{"./events/click":93,"./events/dblclick":94,"./events/focus":95,"./events/keydown":96,"./events/mousedown":97,"custom-event":1,"lodash/last":88,"lodash/remove":90}]},{},[98]);
