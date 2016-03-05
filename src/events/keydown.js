@@ -6,7 +6,12 @@ function arrowUp(event) {
   if (!event.shiftKey || !this.lastSelectedRow()) {
     let row = last(this.rows());
     if (this.lastSelectedRow()) row = this.previousRow(this.lastSelectedRow());
-    this.selectRow(row, false, true);
+
+    while (row && this.isRowSelected(row)) {
+      row = this.previousRow(row);
+    }
+
+    this.selectRow(row | head(this.rows()), false, true);
   } else {
     const row = this.lastSelectedRow();
 
@@ -41,7 +46,12 @@ function arrowDown(event) {
   if (!event.shiftKey || !this.lastSelectedRow()) {
     let row = head(this.rows());
     if (this.lastSelectedRow()) row = this.nextRow(this.lastSelectedRow());
-    this.selectRow(row, false, true);
+
+    while (row && this.isRowSelected(row)) {
+      row = this.nextRow(row);
+    }
+
+    this.selectRow(row || last(this.rows()), false, true);
   } else {
     const row = this.lastSelectedRow();
 

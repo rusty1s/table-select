@@ -2878,7 +2878,12 @@ function arrowUp(event) {
   if (!event.shiftKey || !this.lastSelectedRow()) {
     var row = (0, _last2.default)(this.rows());
     if (this.lastSelectedRow()) row = this.previousRow(this.lastSelectedRow());
-    this.selectRow(row, false, true);
+
+    while (row && this.isRowSelected(row)) {
+      row = this.previousRow(row);
+    }
+
+    this.selectRow(row | (0, _head2.default)(this.rows()), false, true);
   } else {
     var row = this.lastSelectedRow();
 
@@ -2913,7 +2918,12 @@ function arrowDown(event) {
   if (!event.shiftKey || !this.lastSelectedRow()) {
     var row = (0, _head2.default)(this.rows());
     if (this.lastSelectedRow()) row = this.nextRow(this.lastSelectedRow());
-    this.selectRow(row, false, true);
+
+    while (row && this.isRowSelected(row)) {
+      row = this.nextRow(row);
+    }
+
+    this.selectRow(row || (0, _last2.default)(this.rows()), false, true);
   } else {
     var row = this.lastSelectedRow();
 
