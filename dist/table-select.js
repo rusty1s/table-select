@@ -2950,7 +2950,7 @@ function arrowDown(event) {
 }
 
 function onKeyDown(event) {
-  if (event.keyCode === 38) arrowUp.call(this, event);else if (event.keyCode === 40) arrowDown.call(this, event);
+  if (event.keyCode === 38) arrowUp.call(this, event);else if (event.keyCode === 40) arrowDown.call(this, event);else if (event.keyCode === 13) this.action(); // enter
 }
 
 },{"lodash/head":73,"lodash/last":88}],97:[function(require,module,exports){

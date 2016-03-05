@@ -80,4 +80,5 @@ function arrowDown(event) {
 export function onKeyDown(event) {
   if (event.keyCode === 38) arrowUp.call(this, event);
   else if (event.keyCode === 40) arrowDown.call(this, event);
+  else if (event.keyCode === 13) this.action(); // enter
 }
