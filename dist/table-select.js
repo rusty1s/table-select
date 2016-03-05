@@ -3032,11 +3032,18 @@ var defaultOptions = {
 };
 
 var TableSelect = function () {
+  /**
+   * @constructor
+   * @param {string} title - The title of the book.
+   * @param {string} author - The author of the book.
+   */
+
   function TableSelect(element) {
     var options = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
 
     _classCallCheck(this, TableSelect);
 
+    alert(element);
     if (!element || element.tagName !== 'TABLE') {
       throw new Error('Element must be a table');
     }
