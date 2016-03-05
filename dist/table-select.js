@@ -2892,10 +2892,11 @@ function arrowUp(event) {
       nextRow = this.nextRow(nextRow);
     }
 
+    var index = this.rows().length - 1;
     if (nextRow && row !== this.previousRow(nextRow)) {
       this.deselectRow(this.previousRow(nextRow));
       return;
-    } else if (!nextRow && this.indexOfRow(this.lastSelectedRow()) !== this.rows().length - 1) {
+    } else if (!nextRow && this.indexOfRow(this.lastSelectedRow()) !== index) {
       this.deselectRow((0, _last2.default)(this.rows()));
       return;
     }
@@ -3125,7 +3126,7 @@ var TableSelect = function () {
       if (!row) return null;
 
       var nextRow = row.nextSibling;
-      while (nextRow !== null && (nextRow.nodeType === 3 || !this.shouldSelectRow(nextRow))) {
+      while (nextRow && (nextRow.nodeType === 3 || !this.shouldSelectRow(nextRow))) {
         nextRow = nextRow.nextSibling;
       }
       return nextRow;
@@ -3136,7 +3137,7 @@ var TableSelect = function () {
       if (!row) return null;
 
       var previousRow = row.previousSibling;
-      while (previousRow !== null && (previousRow.nodeType === 3 || !this.shouldSelectRow(previousRow))) {
+      while (previousRow && (previousRow.nodeType === 3 || !this.shouldSelectRow(previousRow))) {
         previousRow = previousRow.previousSibling;
       }
       return previousRow;
@@ -3213,6 +3214,8 @@ var TableSelect = function () {
         row.classList.remove(this.selectedClassName);
         this.element.dispatchEvent(new _customEvent2.default('afterDeselect', this._rowDetail(row)));
       }
+
+      return true;
     }
   }, {
     key: 'toggleRow',
@@ -3220,7 +3223,9 @@ var TableSelect = function () {
       var expand = arguments.length <= 1 || arguments[1] === undefined ? false : arguments[1];
       var saveAsLastSelected = arguments.length <= 2 || arguments[2] === undefined ? true : arguments[2];
 
-      if (!this.isRowSelected(row)) this.selectRow(row, expand, saveAsLastSelected);else this.deselectRow(row);
+      if (!this.isRowSelected(row)) {
+        this.selectRow(row, expand, saveAsLastSelected);
+      } else this.deselectRow(row);
     }
   }, {
     key: 'selectAll',
@@ -3287,6 +3292,6 @@ function setDefaultOptions(options) {
   Object.assign(defaultOptions, options);
 }
 
-//if (window) window.TableSelect = TableSelect;
+if (window) window.TableSelect = TableSelect;
 
 },{"./events/click":93,"./events/dblclick":94,"./events/focus":95,"./events/keydown":96,"./events/mousedown":97,"custom-event":1,"lodash/last":88,"lodash/remove":90}]},{},[98]);
