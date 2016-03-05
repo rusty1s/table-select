@@ -1,32 +1,33 @@
 'use strict';
 
-import CustomEvent from 'custom-event';
 import { remove, last } from 'lodash';
 
+import dispatch from './events/dispatch';
 import { onKeyDown } from './events/keydown';
 import { onFocusOut } from './events/focus';
 import { onMouseDown } from './events/mousedown';
 import { onClickRow } from './events/click';
-import { onDblClickRow } from './events/dblclick';
-
-/*
-lodash nur arrow remove und last
-return in select/deselect/toggle kann glaub ich raus
- */
+import { onDoubleClickRow } from './events/doubleclick';
 
 /**
- *
+ * @param {string} className - The class name of the table.
+ * @param {number} tabIndex - The tab index of the table.
+ * @param {string} selectedClassName - The class name of a selected row.
+ * @param {Function} shouldSelectRow(row) - Function that determines whether
+ * `row` is selectable.
+ * @param {Function} shouldDeselectRow(row) - Function that determines whether
+ * `row` is deselectable.
  */
 const defaultOptions = {
   className: 'selectable',
-  selectedClassName: 'selected',
   tabIndex: 1,
+  selectedClassName: 'selected',
   shouldSelectRow() { return true; },
   shouldDeselectRow() { return true; },
 };
 
 /**
- *
+ * Allows to select table row elements.
  */
 export default class TableSelect {
   /**
@@ -35,7 +36,6 @@ export default class TableSelect {
    * @param {Object} options - Specific options for this instance.
    */
   constructor(element, options = {}) {
-    alert(element);
     if (!element || element.tagName !== 'TABLE') {
       throw new Error('Element must be a table');
     }
@@ -60,7 +60,7 @@ export default class TableSelect {
 
     this.rows().forEach(row => {
       row.addEventListener('click', onClickRow(row).bind(this));
-      row.addEventListener('dblclick', onDblClickRow(row).bind(this));
+      row.addEventListener('dblclick', onDoubleClickRow(row).bind(this));
     });
   }
 
@@ -97,7 +97,7 @@ export default class TableSelect {
 
   /**
    * Checks if the row is selected.
-   * @param row
+   * @param {HTMLTableRowElement} row
    * @returns {boolean}
    */
   isRowSelected(row) {
@@ -127,7 +127,7 @@ export default class TableSelect {
    * Returns the next row of `row` which can be selected.
    * Returns `null` if `row` is the last element in the table
    * which can be selected.
-   * @param row
+   * @param {HTMLTableRowElement} row
    * @returns {HTMLTableRowElement}
    */
   nextRow(row) {
@@ -145,7 +145,7 @@ export default class TableSelect {
    * Returns the previous row of `row` which can be selected.
    * Returns `null` if `row` is the first element in the table
    * which can be selected.
-   * @param row
+   * @param {HTMLTableRowElement} row
    * @returns {HTMLTableRowElement}
    */
   previousRow(row) {
@@ -162,7 +162,7 @@ export default class TableSelect {
   /**
    * Returns the position of the row in the table.
    * Returns `-1` if the row don't occur in the table.
-   * @param row
+   * @param {HTMLTableRowElement} row
    * @returns {number}
    */
   indexOfRow(row) {
@@ -171,9 +171,10 @@ export default class TableSelect {
 
   /**
    * Select a row.
-   * @param row
+   * @param {HTMLTableRowElement} row
    * @param expand - Already selected rows get not deselected. Default: false.
-   * @param saveAsLastSelected - Explicitly save this row as last selected. Default: true.
+   * @param saveAsLastSelected - Explicitly save this row as last selected.
+   * Default: true.
    * @returns {boolean} - Returns whether the selection was successful.
    */
   selectRow(row, expand = false, saveAsLastSelected = true) {
@@ -192,11 +193,9 @@ export default class TableSelect {
     if (saveAsLastSelected) this._lastSelectedRows.push(row);
 
     if (!this.isRowSelected(row)) {
-      this.element
-        .dispatchEvent(new CustomEvent('beforeSelect', this._rowDetail(row)));
+      dispatch.beforeSelect(this.element, row);
       row.classList.add(this.selectedClassName);
-      this.element
-        .dispatchEvent(new CustomEvent('afterSelect', this._rowDetail(row)));
+      dispatch.afterSelect(this.element, row);
     }
 
     return true;
@@ -204,7 +203,7 @@ export default class TableSelect {
 
   /**
    * Deselects a row.
-   * @param row
+   * @param {HTMLTableRowElement} row
    * @returns {boolean} - Returns whether the deselection was successful.
    */
   deselectRow(row) {
@@ -214,11 +213,9 @@ export default class TableSelect {
     remove(this._lastSelectedRows, r => r === row);
 
     if (this.isRowSelected(row)) {
-      this.element
-        .dispatchEvent(new CustomEvent('beforeDeselect', this._rowDetail(row)));
+      dispatch.beforeDeselect(this.element, row);
       row.classList.remove(this.selectedClassName);
-      this.element
-        .dispatchEvent(new CustomEvent('afterDeselect', this._rowDetail(row)));
+      dispatch.afterDeselect(this.element, row);
     }
 
     return true;
@@ -226,22 +223,24 @@ export default class TableSelect {
 
   /**
    * Toggles the selection of a row.
-   * @param row
+   * @param {HTMLTableRowElement} row
    * @param expand - Already selected rows get not deselected. Default: false.
-   * @param saveAsLastSelected - Explicitly save this row as last selected. Default: true.
+   * @param saveAsLastSelected - Explicitly save this row as last selected.
+   * Default: true.
    * @returns {boolean} - Returns whether the toggling was successful.
    */
   toggleRow(row, expand = false, saveAsLastSelected = true) {
     if (!this.isRowSelected(row)) {
       return this.selectRow(row, expand, saveAsLastSelected);
-    } else return this.deselectRow(row);
+    }
+
+    return this.deselectRow(row);
   }
 
   /**
    * Select all rows.
    */
   selectAll() {
-    this._lastSelectedRows = [];
     this.rows().forEach(row => this.selectRow(row, true, false));
   }
 
@@ -254,7 +253,7 @@ export default class TableSelect {
 
   /**
    * Selects a range of rows from the last selected row to `row`.
-   * @param row
+   * @param {HTMLTableRowElement} row
    * @param expand - Already selected rows get not deselected. Default: false.
    */
   selectRange(row, expand = false) {
@@ -287,45 +286,23 @@ export default class TableSelect {
    */
   action() {
     if (this.selectedRows().length > 0) {
-      this.element
-        .dispatchEvent(new CustomEvent('action', this._selectedRowDetails()));
+      dispatch.action(this.element, this.selectedRows());
     }
-  }
-
-  /**
-   * Returns the details of `row` which get sent to events.
-   * @param row
-   * @returns {Object}
-   * @private
-   */
-  _rowDetail(row) {
-    return {
-      detail: {
-        row,
-      },
-    };
-  }
-
-  /**
-   * Returns the details of all selected rows which get sent to events.
-   * @returns {Object}
-   * @private
-   */
-  _selectedRowDetails() {
-    return {
-      detail: {
-        rows: this.selectedRows(),
-      },
-    };
   }
 }
 
 /**
  * Overrides the default options.
- * @param {object} - Options.
+ * @param {object} options
  */
 export function setDefaultOptions(options) {
   Object.assign(defaultOptions, options);
 }
 
 if (window) window.TableSelect = TableSelect;
+
+/*
+ lodash nur arrow remove und last -> webpack
+ return in select/deselect/toggle kann glaub ich raus
+ */
+

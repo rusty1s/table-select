@@ -1,7 +1,7 @@
 'use strict';
 
-export function onDblClickRow(row) {
-  return function onDblClick(event) {
+export function onDoubleClickRow(row) {
+  return function onDoubleClick(event) {
     if (!this.shouldSelectRow(row)) return;
 
     if (event.ctrlKey || event.metaKey) {

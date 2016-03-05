@@ -2831,9 +2831,74 @@ function onClickRow(row) {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.onDblClickRow = onDblClickRow;
-function onDblClickRow(row) {
-  return function onDblClick(event) {
+exports.action = action;
+exports.beforeSelect = beforeSelect;
+exports.afterSelect = afterSelect;
+exports.beforeDeselect = beforeDeselect;
+exports.afterDeselect = afterDeselect;
+
+var _customEvent = require('custom-event');
+
+var _customEvent2 = _interopRequireDefault(_customEvent);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+/**
+ * Returns the details of `row` which get sent to events.
+ * @param {HTMLTableRowElement} row
+ * @returns {Object}
+ * @private
+ */
+function rowDetail(row) {
+  return {
+    detail: {
+      row: row
+    }
+  };
+}
+
+/**
+ * Returns the details of all selected rows which get sent to events.
+ * @returns {Object}
+ * @private
+ */
+function rowDetails(rows) {
+  return {
+    detail: {
+      rows: rows
+    }
+  };
+}
+
+function action(element, rows) {
+  element.dispatchEvent(new _customEvent2.default('action', rowDetails(rows)));
+}
+
+function beforeSelect(element, row) {
+  element.dispatchEvent(new _customEvent2.default('beforeSelect', rowDetail(row)));
+}
+
+function afterSelect(element, row) {
+  element.dispatchEvent(new _customEvent2.default('afterSelect', rowDetail(row)));
+}
+
+function beforeDeselect(element, row) {
+  element.dispatchEvent(new _customEvent2.default('beforeDeselect', rowDetail(row)));
+}
+
+function afterDeselect(element, row) {
+  element.dispatchEvent(new _customEvent2.default('afterDeselect', rowDetail(row)));
+}
+
+},{"custom-event":1}],95:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.onDoubleClickRow = onDoubleClickRow;
+function onDoubleClickRow(row) {
+  return function onDoubleClick(event) {
     if (!this.shouldSelectRow(row)) return;
 
     if (event.ctrlKey || event.metaKey) {
@@ -2844,7 +2909,7 @@ function onDblClickRow(row) {
   };
 }
 
-},{}],95:[function(require,module,exports){
+},{}],96:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -2855,7 +2920,7 @@ function onFocusOut() {
   this.deselectAll();
 }
 
-},{}],96:[function(require,module,exports){
+},{}],97:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -2954,7 +3019,7 @@ function onKeyDown(event) {
   if (event.keyCode === 38) arrowUp.call(this, event);else if (event.keyCode === 40) arrowDown.call(this, event);else if (event.keyCode === 13) this.action(); // enter
 }
 
-},{"lodash/head":73,"lodash/last":88}],97:[function(require,module,exports){
+},{"lodash/head":73,"lodash/last":88}],98:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -2975,7 +3040,7 @@ function onMouseDown(event) {
   }
 }
 
-},{}],98:[function(require,module,exports){
+},{}],99:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -2994,9 +3059,9 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 exports.setDefaultOptions = setDefaultOptions;
 
-var _customEvent = require('custom-event');
+var _dispatch = require('./events/dispatch');
 
-var _customEvent2 = _interopRequireDefault(_customEvent);
+var _dispatch2 = _interopRequireDefault(_dispatch);
 
 var _keydown = require('./events/keydown');
 
@@ -3006,7 +3071,7 @@ var _mousedown = require('./events/mousedown');
 
 var _click = require('./events/click');
 
-var _dblclick = require('./events/dblclick');
+var _doubleclick = require('./events/doubleclick');
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -3014,15 +3079,19 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-/*
-arrow + action
-lodash nur arrow remove und last
+/**
+ * @param {string} className - The class name of the table.
+ * @param {number} tabIndex - The tab index of the table.
+ * @param {string} selectedClassName - The class name of a selected row.
+ * @param {Function} shouldSelectRow(row) - Function that determines whether
+ * `row` is selectable.
+ * @param {Function} shouldDeselectRow(row) - Function that determines whether
+ * `row` is deselectable.
  */
-
 var defaultOptions = {
   className: 'selectable',
-  selectedClassName: 'selected',
   tabIndex: 1,
+  selectedClassName: 'selected',
   shouldSelectRow: function shouldSelectRow() {
     return true;
   },
@@ -3031,19 +3100,24 @@ var defaultOptions = {
   }
 };
 
+/**
+ * Allows to select table row elements.
+ */
+
 var TableSelect = function () {
   /**
    * @constructor
-   * @param {string} title - The title of the book.
-   * @param {string} author - The author of the book.
+   * @param {HTMLTableElement} element - The table which should be selectable.
+   * @param {Object} options - Specific options for this instance.
    */
 
   function TableSelect(element) {
+    var _this = this;
+
     var options = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
 
     _classCallCheck(this, TableSelect);
 
-    alert(element);
     if (!element || element.tagName !== 'TABLE') {
       throw new Error('Element must be a table');
     }
@@ -3054,32 +3128,31 @@ var TableSelect = function () {
 
     Object.assign(this, defaultOptions, options, { element: element });
 
-    this._init();
+    this.element.classList.add(this.className);
+    this.element.tabIndex = this.tabIndex;
+
+    this._lastSelectedRows = [];
+    this._onKeyDown = _keydown.onKeyDown.bind(this);
+    this._onFocusOut = _focus.onFocusOut.bind(this);
+    this._onMouseDown = _mousedown.onMouseDown.bind(this);
+
+    this.element.addEventListener('keydown', this._onKeyDown);
+    this.element.addEventListener('focusout', this._onFocusOut);
+    this.element.addEventListener('mousedown', this._onMouseDown);
+
+    this.rows().forEach(function (row) {
+      row.addEventListener('click', (0, _click.onClickRow)(row).bind(_this));
+      row.addEventListener('dblclick', (0, _doubleclick.onDoubleClickRow)(row).bind(_this));
+    });
   }
 
+  /**
+   * Destroys the functionality of the selection and resets the table
+   * to its pre state.
+   */
+
+
   _createClass(TableSelect, [{
-    key: '_init',
-    value: function _init() {
-      var _this = this;
-
-      this.element.classList.add(this.className);
-      this.element.tabIndex = this.tabIndex;
-
-      this._lastSelectedRows = [];
-      this._onKeyDown = _keydown.onKeyDown.bind(this);
-      this._onFocusOut = _focus.onFocusOut.bind(this);
-      this._onMouseDown = _mousedown.onMouseDown.bind(this);
-
-      this.element.addEventListener('keydown', this._onKeyDown);
-      this.element.addEventListener('focusout', this._onFocusOut);
-      this.element.addEventListener('mousedown', this._onMouseDown);
-
-      this.rows().forEach(function (row) {
-        row.addEventListener('click', (0, _click.onClickRow)(row).bind(_this));
-        row.addEventListener('dblclick', (0, _dblclick.onDblClickRow)(row).bind(_this));
-      });
-    }
-  }, {
     key: 'destroy',
     value: function destroy() {
       var _this2 = this;
@@ -3101,11 +3174,24 @@ var TableSelect = function () {
         _this2[name] = null;
       });
     }
+
+    /**
+     * Returns the rows in the table.
+     * @returns {Array} - Array of HTMLTableRowElements.
+     */
+
   }, {
     key: 'rows',
     value: function rows() {
       return Array.from(this.element.querySelector('tbody').children);
     }
+
+    /**
+     * Checks if the row is selected.
+     * @param {HTMLTableRowElement} row
+     * @returns {boolean}
+     */
+
   }, {
     key: 'isRowSelected',
     value: function isRowSelected(row) {
@@ -3113,6 +3199,12 @@ var TableSelect = function () {
 
       return row.classList.contains(this.selectedClassName);
     }
+
+    /**
+     * Returns the selected rows in the table.
+     * @returns {Array} - Array of HTMLTableRowElements.
+     */
+
   }, {
     key: 'selectedRows',
     value: function selectedRows() {
@@ -3122,11 +3214,27 @@ var TableSelect = function () {
         return _this3.isRowSelected(row);
       });
     }
+
+    /**
+     * Returns the last (explicitly) selected row in the table.
+     * Returns `null` if no row is (explicitly) selected.
+     * @returns {HTMLTableRowElement}
+     */
+
   }, {
     key: 'lastSelectedRow',
     value: function lastSelectedRow() {
       return (0, _last2.default)(this._lastSelectedRows);
     }
+
+    /**
+     * Returns the next row of `row` which can be selected.
+     * Returns `null` if `row` is the last element in the table
+     * which can be selected.
+     * @param {HTMLTableRowElement} row
+     * @returns {HTMLTableRowElement}
+     */
+
   }, {
     key: 'nextRow',
     value: function nextRow(row) {
@@ -3138,6 +3246,15 @@ var TableSelect = function () {
       }
       return nextRow;
     }
+
+    /**
+     * Returns the previous row of `row` which can be selected.
+     * Returns `null` if `row` is the first element in the table
+     * which can be selected.
+     * @param {HTMLTableRowElement} row
+     * @returns {HTMLTableRowElement}
+     */
+
   }, {
     key: 'previousRow',
     value: function previousRow(row) {
@@ -3149,29 +3266,29 @@ var TableSelect = function () {
       }
       return previousRow;
     }
+
+    /**
+     * Returns the position of the row in the table.
+     * Returns `-1` if the row don't occur in the table.
+     * @param {HTMLTableRowElement} row
+     * @returns {number}
+     */
+
   }, {
     key: 'indexOfRow',
     value: function indexOfRow(row) {
       return this.rows().indexOf(row);
     }
-  }, {
-    key: '_rowDetail',
-    value: function _rowDetail(row) {
-      return {
-        detail: {
-          row: row
-        }
-      };
-    }
-  }, {
-    key: '_selectedRowDetails',
-    value: function _selectedRowDetails() {
-      return {
-        detail: {
-          rows: this.selectedRows()
-        }
-      };
-    }
+
+    /**
+     * Select a row.
+     * @param {HTMLTableRowElement} row
+     * @param expand - Already selected rows get not deselected. Default: false.
+     * @param saveAsLastSelected - Explicitly save this row as last selected.
+     * Default: true.
+     * @returns {boolean} - Returns whether the selection was successful.
+     */
+
   }, {
     key: 'selectRow',
     value: function selectRow(row) {
@@ -3199,13 +3316,20 @@ var TableSelect = function () {
       if (saveAsLastSelected) this._lastSelectedRows.push(row);
 
       if (!this.isRowSelected(row)) {
-        this.element.dispatchEvent(new _customEvent2.default('beforeSelect', this._rowDetail(row)));
+        _dispatch2.default.beforeSelect(this.element, row);
         row.classList.add(this.selectedClassName);
-        this.element.dispatchEvent(new _customEvent2.default('afterSelect', this._rowDetail(row)));
+        _dispatch2.default.afterSelect(this.element, row);
       }
 
       return true;
     }
+
+    /**
+     * Deselects a row.
+     * @param {HTMLTableRowElement} row
+     * @returns {boolean} - Returns whether the deselection was successful.
+     */
+
   }, {
     key: 'deselectRow',
     value: function deselectRow(row) {
@@ -3217,13 +3341,23 @@ var TableSelect = function () {
       });
 
       if (this.isRowSelected(row)) {
-        this.element.dispatchEvent(new _customEvent2.default('beforeDeselect', this._rowDetail(row)));
+        _dispatch2.default.beforeDeselect(this.element, row);
         row.classList.remove(this.selectedClassName);
-        this.element.dispatchEvent(new _customEvent2.default('afterDeselect', this._rowDetail(row)));
+        _dispatch2.default.afterDeselect(this.element, row);
       }
 
       return true;
     }
+
+    /**
+     * Toggles the selection of a row.
+     * @param {HTMLTableRowElement} row
+     * @param expand - Already selected rows get not deselected. Default: false.
+     * @param saveAsLastSelected - Explicitly save this row as last selected.
+     * Default: true.
+     * @returns {boolean} - Returns whether the toggling was successful.
+     */
+
   }, {
     key: 'toggleRow',
     value: function toggleRow(row) {
@@ -3231,19 +3365,30 @@ var TableSelect = function () {
       var saveAsLastSelected = arguments.length <= 2 || arguments[2] === undefined ? true : arguments[2];
 
       if (!this.isRowSelected(row)) {
-        this.selectRow(row, expand, saveAsLastSelected);
-      } else this.deselectRow(row);
+        return this.selectRow(row, expand, saveAsLastSelected);
+      }
+
+      return this.deselectRow(row);
     }
+
+    /**
+     * Select all rows.
+     */
+
   }, {
     key: 'selectAll',
     value: function selectAll() {
       var _this5 = this;
 
-      this._lastSelectedRows = [];
       this.rows().forEach(function (row) {
         return _this5.selectRow(row, true, false);
       });
     }
+
+    /**
+     * Deselects all rows.
+     */
+
   }, {
     key: 'deselectAll',
     value: function deselectAll() {
@@ -3253,6 +3398,13 @@ var TableSelect = function () {
         return _this6.deselectRow(row);
       });
     }
+
+    /**
+     * Selects a range of rows from the last selected row to `row`.
+     * @param {HTMLTableRowElement} row
+     * @param expand - Already selected rows get not deselected. Default: false.
+     */
+
   }, {
     key: 'selectRange',
     value: function selectRange(row) {
@@ -3282,17 +3434,28 @@ var TableSelect = function () {
         _this7.selectRow(r, true, false);
       });
     }
+
+    /**
+     * Triggers the action event on all selected rows.
+     */
+
   }, {
     key: 'action',
     value: function action() {
       if (this.selectedRows().length > 0) {
-        this.element.dispatchEvent(new _customEvent2.default('action', this._selectedRowDetails()));
+        _dispatch2.default.action(this.element, this.selectedRows());
       }
     }
   }]);
 
   return TableSelect;
 }();
+
+/**
+ * Overrides the default options.
+ * @param {object} options
+ */
+
 
 exports.default = TableSelect;
 function setDefaultOptions(options) {
@@ -3301,4 +3464,9 @@ function setDefaultOptions(options) {
 
 if (window) window.TableSelect = TableSelect;
 
-},{"./events/click":93,"./events/dblclick":94,"./events/focus":95,"./events/keydown":96,"./events/mousedown":97,"custom-event":1,"lodash/last":88,"lodash/remove":90}]},{},[98]);
+/*
+ lodash nur arrow remove und last -> webpack
+ return in select/deselect/toggle kann glaub ich raus
+ */
+
+},{"./events/click":93,"./events/dispatch":94,"./events/doubleclick":95,"./events/focus":96,"./events/keydown":97,"./events/mousedown":98,"lodash/last":88,"lodash/remove":90}]},{},[99]);
