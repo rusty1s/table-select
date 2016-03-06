@@ -43,6 +43,16 @@ new TableSelect(document.getElementById('table-id'), {
 });
 ```
 
+You can configure the default options by setting them via:
+
+```js
+import { setDefaultOptions} from 'table-select';
+
+setDefaultOptions({
+  ...
+});
+```
+
 ### Events
 
 `table-select` supports five custom events:
