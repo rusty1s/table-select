@@ -30,25 +30,26 @@
   },
   "main": "dist/table-select.js",
   "scripts": {
-    "compile": "webpack src dist/table-select.js",
-    "uglify": "webpack -p src dist/table-select.min.js",
+    "compile": "browserify src -t babelify > dist/table-select.js",
+    "uglify": "uglifyjs dist/table-select.js > dist/table-select.min.js",
     "start": "npm run compile && npm run uglify",
-    "lint": "eslint webpack.config.js src test",
+    "lint": "eslint src test",
     "tape": "browserify test -t babelify | tape-run | tap-spec",
     "test": "npm run lint && npm run tape"
   },
   "devDependencies": {
     "babel-core": "*",
-    "babel-loader": "*",
     "babel-plugin-lodash": "*",
     "babel-preset-es2015": "*",
+    "babelify": "*",
+    "browserify": "*",
     "eslint": "*",
     "eslint-config-airbnb": "*",
     "eslint-plugin-react": "*",
     "tap-spec": "*",
     "tape": "*",
     "tape-run": "*",
-    "webpack": "*"
+    "uglify-js": "*"
   },
   "dependencies": {
     "custom-event": "^1.0.0",
