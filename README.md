@@ -30,7 +30,7 @@ You can pass in options as a second parameter. The currently supported options a
 
 * `className`: The class name of the table. Default: `'selectable'`.
 * `tabIndex`: The tab index of the table. Default: `1.
-* `selectedClassName`: The class name of a selected row. Default: `'selected'.
+* `selectedClassName`: The class name of a selected row. Default: `'selected'`.
 * `shouldSelectRow(row)`: Function that determines whether `row` is selectable. 
 Default: All rows can be selected.
 * `shouldDeselectRow(row)`: Function that determines whether `row` is deselectable.
@@ -49,7 +49,7 @@ new TableSelect(document.getElementById('table-id'), {
 
 * `beforeSelect`
 * `afterSelect`
-* `beforeDeselect
+* `beforeDeselect`
 * `afterDeselect`
 * `action`
 
