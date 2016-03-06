@@ -87,9 +87,9 @@
 	 * @param {string} selectedClassName - The class name of a selected row.
 	 * Default: 'selected'.
 	 * @param {Function} shouldSelectRow(row) - Function that determines whether
-	 * `row` is selectable. Default: true.
+	 * `row` is selectable. Default: All rows can be selected.
 	 * @param {Function} shouldDeselectRow(row) - Function that determines whether.
-	 * `row` is deselectable. Default: true.
+	 * `row` is deselectable. Default: All rows can be deselected.
 	 */
 	var defaultOptions = {
 	  className: 'selectable',

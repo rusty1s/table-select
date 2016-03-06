@@ -1,6 +1,9 @@
 # table-select
 
-A small & simple selecting row component for tables written in Javascript.
+Allows you to select table row elements like in your standard finder environment.
+Built in support `ctrl`, `shift`, enter and the arrow keys.
+
+Demo
 
 ## Quick Start
 
@@ -23,13 +26,53 @@ IE, use [a shim](https://github.com/Modernizr/Modernizr/wiki/HTML5-Cross-Browser
 
 ## Additional options
 
+You can pass in options as a second parameter. The currently supported options are:
+
+* `className`: The class name of the table. Default: `'selectable'`.
+* `tabIndex`: The tab index of the table. Default: `1.
+* `selectedClassName`: The class name of a selected row. Default: `'selected'.
+* `shouldSelectRow(row)`: Function that determines whether `row` is selectable. 
+Default: All rows can be selected.
+* `shouldDeselectRow(row)`: Function that determines whether `row` is deselectable.
+Default: All rows can be deselected.
+
+```js
+new TableSelect(document.getElementById('table-id'), {
+  selectedClassName: 'highlighted',
+  shouldSelectRow(row) { return !row.classList.contains('unselectable'); },
+});
+```
+
 ### Events
+
+`table-select` supports five custom events:
+
+* `beforeSelect`
+* `afterSelect`
+* `beforeDeselect
+* `afterDeselect`
+* `action`
+
+Specifc information of the event can be found in `event.detail`, e.g.:
+
+```js
+var table = document.getElementById('table-id');
+var tableSelect = new TableSelect(table);
+
+table.addEventListener('beforeSelect', function(event) {
+  console.log('About to select ' + event.detail.row);
+});
+
+table.addEventListener('action', function(event) {
+  console.log('Perform action for ' + event.detail.rows.length + ' selected row(s)');
+});
+```
 
 ## Node
 
 ```js
 // npm install table-select
-import 'table-select';
+import TableSelect from 'table-select';
 
 const tableSelect = new TableSelect(element, options);
 ```
