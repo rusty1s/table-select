@@ -14,7 +14,8 @@ A small & simple selecting row component for tables written in Javascript.
 
 ## Browser Support
 
-`table-select` expects `classList` to be supported. For this to work on older versions of IE, use [a shim](https://github.com/Modernizr/Modernizr/wiki/HTML5-Cross-Browser-Polyfills#classlist).
+`table-select` expects `classList` to be supported. For this to work on older versions of
+IE, use [a shim](https://github.com/Modernizr/Modernizr/wiki/HTML5-Cross-Browser-Polyfills#classlist).
 
 | <img src="http://i.imgur.com/dJC1GUv.png" width="48px" height="48px" alt="Chrome logo"> | <img src="http://i.imgur.com/o1m5RcQ.png" width="48px" height="48px" alt="Firefox logo"> | <img src="http://i.imgur.com/8h3iz5H.png" width="48px" height="48px" alt="Internet Explorer logo"> | <img src="http://i.imgur.com/iQV4nmJ.png" width="48px" height="48px" alt="Opera logo"> | <img src="http://i.imgur.com/j3tgNKJ.png" width="48px" height="48px" alt="Safari logo"> |
 |:---:|:---:|:---:|:---:|:---:|
@@ -35,7 +36,8 @@ const tableSelect = new TableSelect(element, options);
 
 ## Contributing
 
-If you would like to [submit a pull request](https://github.com/rusty1s/table-select/pulls) with any changes you make, please feel free!
+If you would like to [submit a pull request](https://github.com/rusty1s/table-select/pulls)
+with any changes you make, please feel free!
 Simply run `npm run lint` and `npm run compile` before submitting pull requests.
 
 Tests are run via:
@@ -46,7 +48,8 @@ npm install && npm test
 
 ## Issues
 
-Please use the [GitHub issue tracker](https://github.com/rusty1s/table-select/issues) to raise any problems or feature requests.
+Please use the [GitHub issue tracker](https://github.com/rusty1s/table-select/issues)
+to raise any problems or feature requests.
 
 ## License
 
@@ -69,5 +72,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
-
-

@@ -1,6 +1,6 @@
 'use strict';
 
-import { remove, last } from 'lodash';
+import { last } from 'lodash';
 
 import * as dispatch from './events/dispatch';
 import { onKeyDown } from './events/keydown';
@@ -11,12 +11,14 @@ import { onDoubleClickRow } from './events/doubleclick';
 
 /**
  * @param {string} className - The class name of the table.
- * @param {number} tabIndex - The tab index of the table.
+ * Default: 'selectable'.
+ * @param {number} tabIndex - The tab index of the table. Default: 1.
  * @param {string} selectedClassName - The class name of a selected row.
+ * Default: 'selected'.
  * @param {Function} shouldSelectRow(row) - Function that determines whether
- * `row` is selectable.
- * @param {Function} shouldDeselectRow(row) - Function that determines whether
- * `row` is deselectable.
+ * `row` is selectable. Default: true.
+ * @param {Function} shouldDeselectRow(row) - Function that determines whether.
+ * `row` is deselectable. Default: true.
  */
 const defaultOptions = {
   className: 'selectable',
@@ -49,11 +51,13 @@ export default class TableSelect {
     this.element.classList.add(this.className);
     this.element.tabIndex = this.tabIndex;
 
+    // private helper
     this._lastSelectedRows = [];
     this._onKeyDown = onKeyDown.bind(this);
     this._onFocusOut = onFocusOut.bind(this);
     this._onMouseDown = onMouseDown.bind(this);
 
+    // add events
     this.element.addEventListener('keydown', this._onKeyDown);
     this.element.addEventListener('focusout', this._onFocusOut);
     this.element.addEventListener('mousedown', this._onMouseDown);
@@ -72,6 +76,7 @@ export default class TableSelect {
     this.element.classList.remove(this.className);
     this.element.tabIndex = null;
 
+    // remove events
     this.element.removeEventListener('keydown', this._onKeyPress);
     this.element.removeEventListener('focusout', this._onFocusOut);
     this.element.removeEventListener('mousedown', this._onMouseDown);
@@ -82,6 +87,7 @@ export default class TableSelect {
       row.removeEventListener('dblclick');
     });
 
+    // delete everything that is bound to `this`
     Object.keys(this).forEach(name => {
       this[name] = null;
     });
@@ -128,7 +134,7 @@ export default class TableSelect {
    * @returns {boolean}
    */
   selectableRow(row) {
-    if (row && !row.nodeType === 3) return false;
+    if (row && row.nodeType === 3) return false;
     if (row && !this.shouldSelectRow(row)) return false;
 
     return true;
@@ -192,12 +198,16 @@ export default class TableSelect {
     if (!this.shouldSelectRow(row)) return;
 
     if (!expand) {
+      // deselect all rows except `row`
       this.selectedRows()
         .filter(r => r !== row)
         .forEach(r => this.deselectRow(r));
     }
 
-    remove(this._lastSelectedRows, r => r === row);
+    // deselect all rows except `row`
+    const index = this._lastSelectedRows.indexOf(row);
+    if (index >= 0) this._lastSelectedRows.splice(index, 1);
+
     if (saveAsLastSelected) this._lastSelectedRows.push(row);
 
     if (!this.isRowSelected(row)) {
@@ -215,7 +225,9 @@ export default class TableSelect {
     if (!row) return;
     if (!this.shouldSelectRow(row)) return;
 
-    remove(this._lastSelectedRows, r => r === row);
+    // deselect all rows except `row`
+    const index = this._lastSelectedRows.indexOf(row);
+    if (index >= 0) this._lastSelectedRows.splice(index, 1);
 
     if (this.isRowSelected(row)) {
       dispatch.beforeDeselect(this.element, row);
@@ -262,17 +274,20 @@ export default class TableSelect {
     const rows = this.rows();
     const lastSelectedRow = this.lastSelectedRow();
     const rowIndex = this.indexOfRow(row);
-    const lastSelectedRowIndex = lastSelectedRow ?
-      this.indexOfRow(lastSelectedRow) :
-      0;
-    let index1 = Math.min(rowIndex, lastSelectedRowIndex);
-    let index2 = Math.max(rowIndex, lastSelectedRowIndex);
+    let lastSelectedRowIndex = this.indexOfRow(lastSelectedRow);
+    if (lastSelectedRowIndex < 0) lastSelectedRowIndex = 0;
+
+    let index1 = Math.min(rowIndex, lastSelectedRowIndex);  // min
+    let index2 = Math.max(rowIndex, lastSelectedRowIndex);  // max
 
     if (!expand) {
+      // deselect all rows except the rows in the range [index1, index2]
       [...rows.slice(0, index1), ...rows.slice(index2 + 1, rows.length)]
         .forEach(r => this.deselectRow(r));
     }
 
+    // dont repeat selecting `lastSelectedRow`, thus shift the indices
+    // if necessary
     if (lastSelectedRowIndex < rowIndex) {
       index1++;
       index2++;
@@ -302,11 +317,3 @@ export function setDefaultOptions(options) {
 }
 
 if (window) window.TableSelect = TableSelect;
-
-/*
- lodash nur arrow remove und last -> webpack
- select range überarbeiten
- keydown commentaries
- keydown hat bugs
- */
-

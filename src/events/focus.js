@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * The focus out table behaviour
+ * The focus out table behaviour.
  */
 export function onFocusOut() {
   this.deselectAll();

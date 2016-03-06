@@ -1,9 +1,15 @@
 'use strict';
 
-import { last, head } from 'lodash';
+import { head, last } from 'lodash';
 
+/**
+ * The arrow up behaviour.
+ * @param event
+ */
 function arrowUp(event) {
   if (!event.shiftKey || !this.lastSelectedRow()) {
+    // `row` is the next row to be selected
+    // => last row in the table or the previous row of the last selected row
     let row = last(this.rows());
     if (this.lastSelectedRow()) row = this.previousRow(this.lastSelectedRow());
 
@@ -13,8 +19,11 @@ function arrowUp(event) {
 
     this.selectRow(row || head(this.rows()), false, true);
   } else {
+    // shift arrow up
     const row = this.lastSelectedRow();
 
+    // check if there exists a selected range event to next rows
+    // => arrow up performs a deselecting at the bottom of the range
     let nextRow = this.nextRow(row);
     while (nextRow && this.isRowSelected(nextRow)) {
       nextRow = this.nextRow(nextRow);
@@ -29,6 +38,8 @@ function arrowUp(event) {
       return;
     }
 
+    // otherwise: run up the selection to top and find the row
+    // that is about to get selected
     let previousRow = this.previousRow(row);
     while (previousRow && this.isRowSelected(previousRow)) {
       previousRow = this.previousRow(previousRow);
@@ -38,13 +49,20 @@ function arrowUp(event) {
   }
 }
 
+/**
+ * The arrow down behaviour.
+ * @param event
+ */
 function arrowDown(event) {
   if (event.ctrlKey || event.metaKey) {
+    // perform action and abort
     this.action();
     return;
   }
 
   if (!event.shiftKey || !this.lastSelectedRow()) {
+    // `row` is the next row to be selected
+    // => first row in the table or the next row of the last selected row
     let row = head(this.rows());
     if (this.lastSelectedRow()) row = this.nextRow(this.lastSelectedRow());
 
@@ -54,8 +72,11 @@ function arrowDown(event) {
 
     this.selectRow(row || last(this.rows()), false, true);
   } else {
+    // shift arrow down
     const row = this.lastSelectedRow();
 
+    // check if there exists a selected range event to previous rows
+    // => arrow down performs a deselecting at the top of the range
     let previousRow = this.previousRow(row);
     while (previousRow && this.isRowSelected(previousRow)) {
       previousRow = this.previousRow(previousRow);
@@ -69,6 +90,8 @@ function arrowDown(event) {
       return;
     }
 
+    // otherwise: run down the selection to bottom and find the row
+    // that is about to get selected
     let nextRow = this.nextRow(row);
     while (nextRow && this.isRowSelected(nextRow)) {
       nextRow = this.nextRow(nextRow);
@@ -78,8 +101,11 @@ function arrowDown(event) {
   }
 }
 
+/**
+ * The key down table behaviour (arrow up, arrow down and enter).
+ */
 export function onKeyDown(event) {
-  if (event.keyCode === 38) arrowUp.call(this, event);
-  else if (event.keyCode === 40) arrowDown.call(this, event);
+  if (event.keyCode === 38) arrowUp.call(this, event);  // arrow up
+  else if (event.keyCode === 40) arrowDown.call(this, event); // arrow down
   else if (event.keyCode === 13) this.action(); // enter
 }
