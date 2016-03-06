@@ -91,13 +91,7 @@ const tableSelect = new TableSelect(element, options);
 
 If you would like to [submit a pull request](https://github.com/rusty1s/table-select/pulls)
 with any changes you make, please feel free!
-Simply run `npm run lint` and `npm run compile` before submitting pull requests.
-
-Tests are run via:
-
-```
-npm install && npm test
-```
+Simply run `npm test` to test and `npm start` to compile before submitting pull requests.
 
 ## Issues
 
