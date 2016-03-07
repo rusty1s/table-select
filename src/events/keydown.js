@@ -1,6 +1,7 @@
 'use strict';
 
-import { head, last } from 'lodash/array';
+import head from 'lodash/head';
+import last from 'lodash/last';
 
 /**
  * The arrow up behaviour.

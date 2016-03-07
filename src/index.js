@@ -1,6 +1,6 @@
 'use strict';
 
-import { last } from 'lodash/array';
+import last from 'lodash/last';
 
 import * as dispatch from './events/dispatch';
 import { onKeyDown } from './events/keydown';
