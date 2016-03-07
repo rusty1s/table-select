@@ -3,6 +3,8 @@
 Allows you to select table row elements like in your standard finder environment.
 Built in support `control`, `shift`, `enter` and the arrow keys.
 
+[Demo](http://rusty1s.github.io/table-select)
+
 ## Quick Start
 
 ```html
