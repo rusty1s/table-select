@@ -1,9 +1,7 @@
 # table-select
 
 Allows you to select table row elements like in your standard finder environment.
-Built in support `ctrl`, `shift`, enter and the arrow keys.
-
-Demo
+Built in support `control`, `shift`, `enter` and the arrow keys.
 
 ## Quick Start
 
@@ -20,10 +18,6 @@ Demo
 `table-select` expects `classList` to be supported. For this to work on older versions of
 IE, use [a shim](https://github.com/Modernizr/Modernizr/wiki/HTML5-Cross-Browser-Polyfills#classlist).
 
-| <img src="http://i.imgur.com/dJC1GUv.png" width="48px" height="48px" alt="Chrome logo"> | <img src="http://i.imgur.com/o1m5RcQ.png" width="48px" height="48px" alt="Firefox logo"> | <img src="http://i.imgur.com/8h3iz5H.png" width="48px" height="48px" alt="Internet Explorer logo"> | <img src="http://i.imgur.com/iQV4nmJ.png" width="48px" height="48px" alt="Opera logo"> | <img src="http://i.imgur.com/j3tgNKJ.png" width="48px" height="48px" alt="Safari logo"> |
-|:---:|:---:|:---:|:---:|:---:|
-| 8+ ✔ | 3.6+ ✔ | 10+ ✔ | 11.50+ ✔ | 5.1+ ✔ |
-
 ## Additional options
 
 You can pass in options as a second parameter. The currently supported options are:
@@ -31,7 +25,7 @@ You can pass in options as a second parameter. The currently supported options a
 * `className`: The class name of the table. Default: `'selectable'`.
 * `tabIndex`: The tab index of the table. Default: `1.
 * `selectedClassName`: The class name of a selected row. Default: `'selected'`.
-* `shouldSelectRow(row)`: Function that determines whether `row` is selectable. 
+* `shouldSelectRow(row)`: Function that determines whether `row` is selectable.
 Default: All rows can be selected.
 * `shouldDeselectRow(row)`: Function that determines whether `row` is deselectable.
 Default: All rows can be deselected.

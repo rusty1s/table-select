@@ -1,6 +1,6 @@
 'use strict';
 
-import { head, last } from 'lodash';
+import { head, last } from 'lodash/array';
 
 /**
  * The arrow up behaviour.
@@ -54,12 +54,6 @@ function arrowUp(event) {
  * @param event
  */
 function arrowDown(event) {
-  if (event.ctrlKey || event.metaKey) {
-    // perform action and abort
-    this.action();
-    return;
-  }
-
   if (!event.shiftKey || !this.lastSelectedRow()) {
     // `row` is the next row to be selected
     // => first row in the table or the next row of the last selected row
@@ -105,7 +99,11 @@ function arrowDown(event) {
  * The key down table behaviour (arrow up, arrow down and enter).
  */
 export function onKeyDown(event) {
-  if (event.keyCode === 38) arrowUp.call(this, event);  // arrow up
-  else if (event.keyCode === 40) arrowDown.call(this, event); // arrow down
-  else if (event.keyCode === 13) this.action(); // enter
+  if (event.which === 38 || event.keyCode === 38) {
+    arrowUp.call(this, event);  // arrow up
+  } else if (event.which === 40 || event.keyCode === 40) {
+    arrowDown.call(this, event); // arrow down
+  } else if (event.which === 13 || event.keyCode === 13) {
+    this.action(); // enter
+  }
 }

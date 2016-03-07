@@ -1,7 +1,7 @@
 {
   "name": "table-select",
   "version": "0.0.0",
-  "description": "Selecting row component in html tables",
+  "description": "Allows you to select table row elements like in your standard finder environment",
   "keywords": [
     "js",
     "html",
@@ -28,7 +28,7 @@
   "bugs": {
     "url": "http://github.com/rusty1s/table-select/issues"
   },
-  "main": "dist/table-select.js",
+  "main": "src/index.js",
   "scripts": {
     "compile": "browserify src -t babelify > dist/table-select.js",
     "uglify": "uglifyjs dist/table-select.js > dist/table-select.min.js",
@@ -39,7 +39,6 @@
   },
   "devDependencies": {
     "babel-core": "*",
-    "babel-plugin-lodash": "*",
     "babel-preset-es2015": "*",
     "babelify": "*",
     "browserify": "*",

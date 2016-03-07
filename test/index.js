@@ -2,5 +2,7 @@
 
 import './spec/setup';
 import './spec/init';
-import './spec/select';
-import './spec/events';
+import './spec/methods';
+import './spec/events/click';
+import './spec/events/keydown';
+import './spec/events/dispatch';

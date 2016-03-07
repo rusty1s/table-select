@@ -1,6 +1,6 @@
 'use strict';
 
-import { last } from 'lodash';
+import { last } from 'lodash/array';
 
 import * as dispatch from './events/dispatch';
 import { onKeyDown } from './events/keydown';
@@ -56,6 +56,8 @@ export default class TableSelect {
     this._onKeyDown = onKeyDown.bind(this);
     this._onFocusOut = onFocusOut.bind(this);
     this._onMouseDown = onMouseDown.bind(this);
+    this._onClick = [];
+    this._onDoubleClick = [];
 
     // add events
     this.element.addEventListener('keydown', this._onKeyDown);
@@ -63,8 +65,13 @@ export default class TableSelect {
     this.element.addEventListener('mousedown', this._onMouseDown);
 
     this.rows().forEach(row => {
-      row.addEventListener('click', onClickRow(row).bind(this));
-      row.addEventListener('dblclick', onDoubleClickRow(row).bind(this));
+      const onClick = onClickRow(row).bind(this);
+      this._onClick.push(onClick);
+      row.addEventListener('click', onClick);
+
+      const onDoubleClick = onDoubleClickRow(row).bind(this);
+      this._onDoubleClick.push(onDoubleClick);
+      row.addEventListener('dblclick', onDoubleClick);
     });
   }
 
@@ -77,19 +84,25 @@ export default class TableSelect {
     this.element.tabIndex = null;
 
     // remove events
-    this.element.removeEventListener('keydown', this._onKeyPress);
+    this.element.removeEventListener('keydown', this._onKeyDown);
     this.element.removeEventListener('focusout', this._onFocusOut);
     this.element.removeEventListener('mousedown', this._onMouseDown);
 
     this.rows().forEach(row => {
       this.deselectRow(row);
-      row.removeEventListener('click');
-      row.removeEventListener('dblclick');
+
+      this._onClick.forEach(onClick => {
+        row.removeEventListener('click', onClick);
+      });
+
+      this._onDoubleClick.forEach(onDoubleClick => {
+        row.removeEventListener('dblclick', onDoubleClick);
+      });
     });
 
     // delete everything that is bound to `this`
     Object.keys(this).forEach(name => {
-      this[name] = null;
+      delete this[name];
     });
   }
 
@@ -134,6 +147,8 @@ export default class TableSelect {
    * @returns {boolean}
    */
   selectableRow(row) {
+	// `nextSibling` or `previousSibling` can be a text object
+	// dependent on your html structure => skip those
     if (row && row.nodeType === 3) return false;
     if (row && !this.shouldSelectRow(row)) return false;
 
@@ -289,7 +304,7 @@ export default class TableSelect {
     // dont repeat selecting `lastSelectedRow`, thus shift the indices
     // if necessary
     if (lastSelectedRowIndex < rowIndex) {
-      index1++;
+      if (lastSelectedRow) index1++;
       index2++;
     }
 
