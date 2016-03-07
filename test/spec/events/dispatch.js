@@ -2,16 +2,11 @@
 
 import { test } from 'tape';
 import TableSelect from '../../../src';
+import KeyCodeEvent from '../../helper/key-code-event';
 
 let rows = null;
 let table = null;
 let tableSelect = null;
-
-const enter = new KeyboardEvent('keydown');
-Object.defineProperty(enter, 'keyCode', {
-  get() { return this.keyCodeVal; },
-});
-enter.keyCodeVal = 13;
 
 test('pre dispatch', t => {
   rows = Array.from(document.querySelectorAll('tr'));
@@ -37,7 +32,7 @@ test('before and after select event', t => {
     table.removeEventListener('beforeSelect', select);
     table.removeEventListener('afterSelect', select);
     t.ok(true);
-  })
+  });
 });
 
 test('before and after deselect event', t => {
@@ -108,7 +103,7 @@ test('action on enter', t => {
 
   tableSelect.selectRow(rows[1]);
   tableSelect.selectRow(rows[2], true);
-  table.dispatchEvent(enter);
+  table.dispatchEvent(new KeyCodeEvent('keydown', 13));
 
   setTimeout(() => {
     table.removeEventListener('action', action);
