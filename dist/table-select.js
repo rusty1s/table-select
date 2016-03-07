@@ -6439,18 +6439,26 @@ function afterDeselect(element, row) {
 },{"custom-event":1}],196:[function(require,module,exports){
 'use strict';
 
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.onDoubleClickRow = onDoubleClickRow;
+
+var _clearSelection = require('../helper/clear-selection');
+
+var _clearSelection2 = _interopRequireDefault(_clearSelection);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Returns the double click behaviour for a row.
  * @param {HTMLTableRowElement} row
  * @returns {Function}
  */
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.onDoubleClickRow = onDoubleClickRow;
 function onDoubleClickRow(row) {
   return function onDoubleClick(event) {
+    (0, _clearSelection2.default)();
+
     if (!this.shouldSelectRow(row)) return;
 
     if (event.ctrlKey || event.metaKey) {
@@ -6461,7 +6469,7 @@ function onDoubleClickRow(row) {
   };
 }
 
-},{}],197:[function(require,module,exports){
+},{"../helper/clear-selection":200}],197:[function(require,module,exports){
 'use strict';
 
 /**
@@ -6595,21 +6603,16 @@ function onKeyDown(event) {
 },{"lodash/array":105}],199:[function(require,module,exports){
 'use strict';
 
-/**
- * Clears the selection in the document.
- */
-
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.onMouseDown = onMouseDown;
-function clearSelection() {
-  var selection = window.getSelection ? window.getSelection() : document.selection;
 
-  if (selection) {
-    if (selection.removeAllRanges) selection.removeAllRanges();else if (selection.empty) selection.empty();
-  }
-}
+var _clearSelection = require('../helper/clear-selection');
+
+var _clearSelection2 = _interopRequireDefault(_clearSelection);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
  * Clears the selection in the document on mouse down
@@ -6618,11 +6621,30 @@ function clearSelection() {
  */
 function onMouseDown(event) {
   if (event.shiftKey) {
-    clearSelection();
+    (0, _clearSelection2.default)();
   }
 }
 
-},{}],200:[function(require,module,exports){
+},{"../helper/clear-selection":200}],200:[function(require,module,exports){
+'use strict';
+
+/**
+ * Clears the selection in the document.
+ */
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = clearSelection;
+function clearSelection() {
+  var selection = window.getSelection ? window.getSelection() : document.selection;
+
+  if (selection) {
+    if (selection.removeAllRanges) selection.removeAllRanges();else if (selection.empty) selection.empty();
+  }
+}
+
+},{}],201:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -7075,4 +7097,4 @@ function setDefaultOptions(options) {
 
 if (window) window.TableSelect = TableSelect;
 
-},{"./events/click":194,"./events/dispatch":195,"./events/doubleclick":196,"./events/focus":197,"./events/keydown":198,"./events/mousedown":199,"lodash/array":105}]},{},[200]);
+},{"./events/click":194,"./events/dispatch":195,"./events/doubleclick":196,"./events/focus":197,"./events/keydown":198,"./events/mousedown":199,"lodash/array":105}]},{},[201]);

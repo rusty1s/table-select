@@ -1,5 +1,7 @@
 'use strict';
 
+import clearSelection from '../helper/clear-selection';
+
 /**
  * Returns the double click behaviour for a row.
  * @param {HTMLTableRowElement} row
@@ -7,6 +9,8 @@
  */
 export function onDoubleClickRow(row) {
   return function onDoubleClick(event) {
+    clearSelection();
+
     if (!this.shouldSelectRow(row)) return;
 
     if (event.ctrlKey || event.metaKey) {

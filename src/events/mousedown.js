@@ -1,18 +1,6 @@
 'use strict';
 
-/**
- * Clears the selection in the document.
- */
-function clearSelection() {
-  const selection = window.getSelection ?
-    window.getSelection() :
-    document.selection;
-
-  if (selection) {
-    if (selection.removeAllRanges) selection.removeAllRanges();
-    else if (selection.empty) selection.empty();
-  }
-}
+import clearSelection from '../helper/clear-selection';
 
 /**
  * Clears the selection in the document on mouse down
