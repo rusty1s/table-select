@@ -25,7 +25,7 @@ IE, use [a shim](https://github.com/Modernizr/Modernizr/wiki/HTML5-Cross-Browser
 You can pass in options as a second parameter. The currently supported options are:
 
 * `className`: The class name of the table. Default: `'selectable'`.
-* `tabIndex`: The tab index of the table. Default: `1.
+* `tabIndex`: The tab index of the table. Default: `1`.
 * `selectedClassName`: The class name of a selected row. Default: `'selected'`.
 * `shouldSelectRow(row)`: Function that determines whether `row` is selectable.
 Default: All rows can be selected.
@@ -42,7 +42,7 @@ new TableSelect(document.getElementById('table-id'), {
 You can configure the default options by setting them via:
 
 ```js
-import { setDefaultOptions} from 'table-select';
+import { setDefaultOptions } from 'table-select';
 
 setDefaultOptions({
   ...
