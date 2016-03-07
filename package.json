@@ -1,6 +1,6 @@
 {
   "name": "table-select",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "Allows you to select table row elements like in your standard finder environment",
   "keywords": [
     "js",
